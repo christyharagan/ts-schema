@@ -1,4 +1,4 @@
-declare module 'typescript-schema/src/schema' {
+declare module 'typescript-schema/schema' {
 	export interface DecoratedSchema {
 	    decorators?: Array<DecoratorSchema>;
 	}
@@ -76,8 +76,8 @@ declare module 'typescript-schema/src/schema' {
 	}
 
 }
-declare module 'typescript-schema/src/schemaGenerator' {
-	import * as s from 'typescript-schema/src/schema';
+declare module 'typescript-schema/schemaGenerator' {
+	import * as s from './schema';
 	export interface Files {
 	    [name: string]: string;
 	}
@@ -85,8 +85,8 @@ declare module 'typescript-schema/src/schemaGenerator' {
 	export function generateSchema(files: Files): s.Schema;
 
 }
-declare module 'typescript-schema/src/schemaVisitor' {
-	import * as s from 'typescript-schema/src/schema';
+declare module 'typescript-schema/schemaVisitor' {
+	import * as s from './schema';
 	export interface SchemaVisitor extends ModuleSchemaVisitor {
 	    onModuleSchema?: (moduleSchema: s.ModuleSchema) => void;
 	}
@@ -107,9 +107,12 @@ declare module 'typescript-schema/src/schemaVisitor' {
 	export function interfaceSchemaVisitor(interfaceSchema: s.InterfaceSchema, visitor: InterfaceSchemaVisitor, moduleSchema?: s.ModuleSchema): void;
 
 }
-declare module 'typescript-schema' {
-	export * from 'typescript-schema/src/schema';
-	export * from 'typescript-schema/src/schemaGenerator';
-	export * from 'typescript-schema/src/schemaVisitor';
+declare module 'typescript-schema/index' {
+	export * from './schema';
+	export * from './schemaGenerator';
+	export * from './schemaVisitor';
 
+}
+declare module 'typescript-schema' {
+	export * from 'index';
 }

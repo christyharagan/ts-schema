@@ -1,8 +1,8 @@
 {
   "name": "typescript-schema",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Extracts types from TypeScript and can be used to create json schemas.",
-  "main": "./dist/js/index.js",
+  "main": "./dist/lib/index.js",
   "repository": "christyharagan/ts-schema",
   "author": {
     "name": "Christy Haragan",
@@ -20,7 +20,7 @@
     "typescript": "^1.5.0-beta"
   },
   "devDependencies": {
-    "dts-generator": "git://github.com/SitePen/dts-generator.git",
+    "dts-generator": "git://github.com/jsen-/dts-generator.git",
     "gulp": "^3.9.0"
   }
 }

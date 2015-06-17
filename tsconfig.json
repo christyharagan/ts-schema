@@ -9,20 +9,22 @@
         "sourceMap": true,
         "sourceRoot": ".",
         "target": "es5",
-        "outDir": "./dist/js"
+        "outDir": "./dist"
     },
     "filesGlob": [
-        "./module/**/*.ts"
+        "./lib/**/*.ts",
+        "./typings/**/*.d.ts",
+        "./node_modules/typescript/bin/typescript.d.ts"
     ],
-    "compileOnSave": false,
+    "compileOnSave": true,
     "files": [
-        "./module/index.ts",
-        "./module/src/schema.ts",
-        "./module/src/schemaGenerator.ts",
-        "./module/src/schemaVisitor.ts",
-        "./module/typings/es6/es6.d.ts",
-        "./module/typings/node/node.d.ts",
-        "./module/typings/tsd.d.ts",
-        "./module/typings/typescript/typescript.d.ts"
+        "./lib/index.ts",
+        "./lib/schema.ts",
+        "./lib/schemaGenerator.ts",
+        "./lib/schemaVisitor.ts",
+        "./typings/es6/es6.d.ts",
+        "./typings/node/node.d.ts",
+        "./typings/tsd.d.ts",
+        "./node_modules/typescript/bin/typescript.d.ts"
     ]
 }
