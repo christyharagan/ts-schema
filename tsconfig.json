@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "emitDecoratorMetadata": true,
+        "declaration": false,
+        "module": "commonjs",
+        "noImplicitAny": false,
+        "noLib": false,
+        "rootDir": ".",
+        "sourceMap": true,
+        "sourceRoot": ".",
+        "target": "es5",
+        "outDir": "./dist/js"
+    },
+    "filesGlob": [
+        "./module/**/*.ts"
+    ],
+    "compileOnSave": false,
+    "files": [
+        "./module/index.ts",
+        "./module/src/schema.ts",
+        "./module/src/schemaGenerator.ts",
+        "./module/src/schemaVisitor.ts",
+        "./module/typings/es6/es6.d.ts",
+        "./module/typings/node/node.d.ts",
+        "./module/typings/tsd.d.ts",
+        "./module/typings/typescript/typescript.d.ts"
+    ]
+}
