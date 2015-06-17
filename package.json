@@ -1,0 +1,28 @@
+{
+  "name": "ts-schema",
+  "version": "0.1.0",
+  "description": "Extracts types from TypeScript and can be used to create json schemas.",
+  "main": "./dist/js/index.js",
+  "typescript": {
+    "definition": "./dist/uservices.d.ts"
+  },
+  "repository": "christyharagan/ts-schema",
+  "author": {
+    "name": "Christy Haragan",
+    "email": "christy.haragan.github@gmail.com",
+    "url": "https://github.com/christyharagan"
+  },
+  "keywords": [
+    "typescript",
+    "schema",
+    "json",
+    "types"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^1.5.0-beta"
+  },
+  "devDependencies": {
+    "typedoc": "^0.3.4"
+  }
+}
