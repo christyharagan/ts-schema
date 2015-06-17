@@ -1,6 +1,6 @@
 {
   "name": "typescript-schema",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Extracts types from TypeScript and can be used to create json schemas.",
   "main": "./dist/js/index.js",
   "repository": "christyharagan/ts-schema",
