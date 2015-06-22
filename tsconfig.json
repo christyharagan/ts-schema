@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "emitDecoratorMetadata": true,
-        "declaration": false,
+        "declaration": true,
         "module": "commonjs",
         "noImplicitAny": false,
         "noLib": false,
@@ -14,10 +14,12 @@
     "filesGlob": [
         "./lib/**/*.ts",
         "./typings/**/*.d.ts",
-        "./node_modules/typescript/bin/typescript.d.ts"
+        "./node_modules/typescript/bin/typescript.d.ts",
+        "./typescript-schema.d.ts"
     ],
     "compileOnSave": true,
     "files": [
+        "./lib/expressionToLiteral.ts",
         "./lib/index.ts",
         "./lib/schema.ts",
         "./lib/schemaGenerator.ts",
@@ -25,6 +27,7 @@
         "./typings/es6/es6.d.ts",
         "./typings/node/node.d.ts",
         "./typings/tsd.d.ts",
-        "./node_modules/typescript/bin/typescript.d.ts"
+        "./node_modules/typescript/bin/typescript.d.ts",
+        "./typescript-schema.d.ts"
     ]
 }

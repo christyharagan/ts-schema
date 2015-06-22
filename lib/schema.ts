@@ -2,7 +2,22 @@ export interface DecoratedSchema {
   decorators?: Array<DecoratorSchema>
 }
 
-export type Type = string|ArraySchema|FunctionSchema|TypeReference
+export enum TypeKind {
+  STRING,
+  BOOLEAN,
+  NUMBER,
+  ANY,
+  ARRAY,
+  FUNCTION,
+  REFERENCE,
+  TUPLE,
+  UNION
+}
+
+//export type Type = string|ArraySchema|FunctionSchema|TypeReference|TupleSchema|UnionSchema
+export interface Type {
+  typeKind: TypeKind
+}
 
 export interface TypeParameter {
   name: string
@@ -14,12 +29,23 @@ export interface DeclaredType {
   type: string
 }
 
-export interface TypeReference extends DeclaredType {
+export interface TypeReference extends DeclaredType, Type {
   typeArguments?: Type[]
 }
 
-export interface ArraySchema {
+export interface TypeExpression extends DeclaredType, Expression {
+}
+
+export interface ArraySchema extends Type {
   element: Type
+}
+
+export interface TupleSchema extends Type {
+  elements: Type[]
+}
+
+export interface UnionSchema extends Type {
+  types: Type[]
 }
 
 export interface Parameter extends DecoratedSchema {
@@ -27,9 +53,9 @@ export interface Parameter extends DecoratedSchema {
   type: Type
 }
 
-export interface FunctionSchema extends DecoratedSchema {
+export interface FunctionSchema extends DecoratedSchema, Type {
   parameters: Array<Parameter>
-  type: Type
+  type?: Type
 }
 
 export interface InterfaceSchema {
@@ -38,21 +64,33 @@ export interface InterfaceSchema {
   typeParameters?: TypeParameter[]
 }
 
-export type Expression = Literal|TypeReference|ObjectExpression|ArrayExpression
-
-export interface Literal {
-  value: any
-  type: string
+//export type Expression = Literal|TypeReference|ObjectExpression|ArrayExpression
+export enum ExpressionKind {
+  STRING,
+  NUMBER,
+  BOOLEAN,
+  TYPE_REFERENCE,
+  OBJECT,
+  ARRAY
 }
 
-export interface ArrayExpression extends Array<Literal|TypeReference|ObjectExpression|ArrayExpression> {
+export interface Expression {
+  expressionKind: ExpressionKind
+}
+
+export interface Literal<T> extends Expression {
+  value: T
+}
+
+export interface ArrayExpression extends Expression {
+  elements: Array<Expression>
 }
 
 export interface ObjectProperties {
   [property:string]:Expression
 }
 
-export interface ObjectExpression {
+export interface ObjectExpression extends Expression {
   properties: ObjectProperties
 }
 

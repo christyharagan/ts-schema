@@ -10,30 +10,34 @@ interface Symbols {
   [localName: string]: s.DeclaredType
 }
 
-function typeNodeToType(typeNode: ts.TypeNode|ts.SignatureDeclaration, symbols: Symbols): s.Type {
+type Type = s.Type
+type TypeNode = ts.TypeNode
+
+function typeNodeToType(symbols: Symbols, typeNode: ts.TypeNode|ts.SignatureDeclaration): s.Type {
   if (typeNode.kind === ts.SyntaxKind.TypeReference) {
     let typeReference = <ts.TypeReferenceNode> typeNode
     let typeName = (<ts.Identifier>typeReference.typeName).text
     let args: s.Type[] = []
     if (typeReference.typeArguments) {
       typeReference.typeArguments.forEach(function(typeArgument: ts.TypeNode) {
-        args.push(typeNodeToType(typeArgument, symbols))
+        args.push(typeNodeToType(symbols, typeArgument))
       })
     }
     let declaredType = symbols[typeName]
     return {
+      typeKind: s.TypeKind.REFERENCE,
       module: declaredType ? declaredType.module : '',
       type: declaredType ? declaredType.type : typeName,
       args: args
     }
   } else if (typeNode.kind === ts.SyntaxKind.StringKeyword) {
-    return 'string'
+    return {typeKind: s.TypeKind.STRING}
   } else if (typeNode.kind === ts.SyntaxKind.BooleanKeyword) {
-    return 'boolean'
+    return {typeKind: s.TypeKind.BOOLEAN}
   } else if (typeNode.kind === ts.SyntaxKind.NumberKeyword) {
-    return 'number'
+    return {typeKind: s.TypeKind.NUMBER}
   } else if (typeNode.kind === ts.SyntaxKind.AnyKeyword) {
-    return 'any'
+    return {typeKind: s.TypeKind.ANY}
   } else if (typeNode.kind === ts.SyntaxKind.FunctionType || typeNode.kind === ts.SyntaxKind.MethodSignature || typeNode.kind === ts.SyntaxKind.MethodDeclaration) {
     let funcType = <ts.FunctionOrConstructorTypeNode> typeNode
 
@@ -41,7 +45,7 @@ function typeNodeToType(typeNode: ts.TypeNode|ts.SignatureDeclaration, symbols: 
     funcType.parameters.forEach(function(paramDec: ts.ParameterDeclaration) {
       let parameter: s.Parameter = {
         name: (<ts.Identifier>paramDec.name).text,
-        type: typeNodeToType(paramDec.type, symbols)
+        type: typeNodeToType(symbols, paramDec.type)
       }
 
       processDecorators(paramDec, parameter, symbols)
@@ -50,8 +54,9 @@ function typeNodeToType(typeNode: ts.TypeNode|ts.SignatureDeclaration, symbols: 
     })
 
     let functionSchema: s.FunctionSchema = {
+      typeKind: s.TypeKind.FUNCTION,
       parameters: params,
-      type: (!funcType.type || funcType.type.kind === ts.SyntaxKind.VoidKeyword) ? 'void' : typeNodeToType(funcType.type, symbols)
+      type: (!funcType.type || funcType.type.kind === ts.SyntaxKind.VoidKeyword) ? undefined : typeNodeToType(symbols, funcType.type)
     }
 
     processDecorators(funcType, functionSchema, symbols)
@@ -60,7 +65,26 @@ function typeNodeToType(typeNode: ts.TypeNode|ts.SignatureDeclaration, symbols: 
   } else if (typeNode.kind === ts.SyntaxKind.ArrayType) {
     let arrayType = <ts.ArrayTypeNode> typeNode
 
-    return { element: typeNodeToType(arrayType.elementType, symbols) }
+    return {
+      typeKind: s.TypeKind.ARRAY,
+      element: typeNodeToType(symbols, arrayType.elementType)
+      }
+  } else if (typeNode.kind === ts.SyntaxKind.TupleType) {
+    let tupleType = <ts.TupleTypeNode> typeNode
+
+    let elements:s.Type[] = tupleType.elementTypes.map(<(TypeNode)=>Type>typeNodeToType.bind(null, symbols))
+    return {
+      typeKind: s.TypeKind.TUPLE,
+      elements: elements
+    }
+  } else if (typeNode.kind === ts.SyntaxKind.UnionType) {
+    let unionType = <ts.UnionTypeNode> typeNode
+
+    let types:s.Type[] = unionType.types.map(<(TypeNode)=>Type>typeNodeToType.bind(null, symbols))
+    return {
+      typeKind: s.TypeKind.UNION,
+      types: types
+    }
   } else {
     throw {
       message: 'Unknown Type Node',
@@ -72,29 +96,35 @@ function typeNodeToType(typeNode: ts.TypeNode|ts.SignatureDeclaration, symbols: 
 function processExpression(expression: ts.Expression, symbols: Symbols): s.Expression {
   if (expression.kind === ts.SyntaxKind.Identifier) {
     let typeName = expression.getFullText()
-    return symbols[typeName] || { module: '', type: typeName }
+    let declaredType = symbols[typeName]
+    return {
+      expressionKind: s.ExpressionKind.TYPE_REFERENCE,
+      module: declaredType? declaredType.module : '',
+      type: declaredType? declaredType.type : typeName
+    }
   } else if (expression.kind === ts.SyntaxKind.StringLiteral) {
     return {
-      value: (<ts.LiteralExpression>expression).text,
-      type: 'string'
+      expressionKind: s.ExpressionKind.STRING,
+      value: (<ts.LiteralExpression>expression).text
     }
   } else if (expression.kind === ts.SyntaxKind.TrueKeyword) {
     return {
-      value: true,
-      type: 'boolean'
+      expressionKind: s.ExpressionKind.BOOLEAN,
+      value: true
     }
   } else if (expression.kind === ts.SyntaxKind.FalseKeyword) {
     return {
-      value: false,
-      type: 'boolean'
+      expressionKind: s.ExpressionKind.BOOLEAN,
+      value: false
     }
   } else if (expression.kind === ts.SyntaxKind.NumericLiteral) {
     return {
-      value: parseFloat((<ts.LiteralExpression>expression).text),
-      type: 'number'
+      expressionKind: s.ExpressionKind.NUMBER,
+      value: parseFloat((<ts.LiteralExpression>expression).text)
     }
   } else if (expression.kind === ts.SyntaxKind.ObjectLiteralExpression) {
     let object:s.ObjectExpression = {
+      expressionKind: s.ExpressionKind.OBJECT,
       properties: {
       }
     }
@@ -106,10 +136,13 @@ function processExpression(expression: ts.Expression, symbols: Symbols): s.Expre
     })
     return object
   } else if (expression.kind === ts.SyntaxKind.ArrayLiteralExpression) {
-    let array: s.ArrayExpression = []
+    let array: s.ArrayExpression = {
+      expressionKind: s.ExpressionKind.ARRAY,
+      elements: []
+    }
     let arrayLiteral = <ts.ArrayLiteralExpression> expression
     arrayLiteral.elements.forEach(function(element) {
-      array.push(processExpression(element, symbols))
+      array.elements.push(processExpression(element, symbols))
     })
     return array
   }
@@ -129,7 +162,7 @@ function processDecorators(node: ts.Node, schema: s.DecoratedSchema, symbols: Sy
           parameters.push(processExpression(arg, symbols))
         })
         schema.decorators.push({
-          decorator: (<ts.Identifier>call.expression).text,
+          decorator: (<ts.PropertyAccessExpression>call.expression).name.text,
           parameters: parameters
         })
       }
@@ -199,12 +232,12 @@ function processFile(moduleName: string, code: string): s.ModuleSchema {
         if (methDec.parameters) {
           intSchema.members[name] = {
             name: name,
-            type: typeNodeToType(methDec, symbols)
+            type: typeNodeToType(symbols, methDec)
           }
         } else {
           intSchema.members[name] = {
             name: name,
-            type: typeNodeToType(methDec.type, symbols)
+            type: typeNodeToType(symbols, methDec.type)
           }
         }
       })
@@ -226,7 +259,16 @@ function processFile(moduleName: string, code: string): s.ModuleSchema {
           heritageClause.types.forEach(function(heritageClauseElement: ts.HeritageClauseElement) {
             if (heritageClauseElement.expression.kind === ts.SyntaxKind.Identifier) {
               let identifer = <ts.Identifier>heritageClauseElement.expression
-              clsSchema.implements.push(symbols[identifer.text] || { module: '', type: identifer.text })
+              let declaredType = symbols[identifer.text]
+              let impl:s.TypeReference = {
+                typeKind: s.TypeKind.REFERENCE,
+                module: declaredType ? declaredType.module : '',
+                type: declaredType ? declaredType.type : identifer.text
+              }
+              clsSchema.implements.push(impl)
+              if (heritageClauseElement.typeArguments) {
+                impl.typeArguments = heritageClauseElement.typeArguments.map(<(TypeNode)=>Type>typeNodeToType.bind(null, symbols))
+              }
             }
           })
         }
@@ -238,7 +280,7 @@ function processFile(moduleName: string, code: string): s.ModuleSchema {
           let name = (<ts.Identifier>methodDec.name).text
           clsSchema.members[name] = {
             name: name,
-            type: typeNodeToType(methodDec, symbols)
+            type: typeNodeToType(symbols, methodDec)
           }
         }
       })
