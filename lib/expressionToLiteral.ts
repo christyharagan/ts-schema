@@ -26,9 +26,9 @@ export function expressionToLiteral(expression:s.Expression) {
     case s.ExpressionKind.BOOLEAN:
     case s.ExpressionKind.NUMBER:
       return literalExpressionToLiteral(<s.Literal<any>> expression)
-    case s.ExpressionKind.TYPE_REFERENCE:
-      // TODO
-      return
+    case s.ExpressionKind.CLASS:
+      let clsExpression = <s.ClassExpression> expression
+      return clsExpression.class
     case s.ExpressionKind.ARRAY:
       return arrayExpressionToLiteral(<s.ArrayExpression> expression)
     case s.ExpressionKind.OBJECT:

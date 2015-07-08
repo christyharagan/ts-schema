@@ -1,4 +1,5 @@
 export * from './schema'
-export * from './schemaGenerator'
+export * from './rawSchemaGenerator'
+export * from './rawSchemaToSchema'
 export * from './schemaVisitor'
 export * from './expressionToLiteral'

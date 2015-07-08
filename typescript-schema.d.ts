@@ -4,18 +4,28 @@ declare module "typescript-schema/dist/lib/expressionToLiteral"{
     export = tmp;
 }
 
+declare module "typescript-schema/dist/lib/flattenSchema"{
+    import tmp = require('dist/lib/flattenSchema');
+    export = tmp;
+}
+
 declare module "typescript-schema/dist/lib/index"{
     import tmp = require('dist/lib/index');
     export = tmp;
 }
 
-declare module "typescript-schema/dist/lib/schema"{
-    import tmp = require('dist/lib/schema');
+declare module "typescript-schema/dist/lib/rawSchemaGenerator"{
+    import tmp = require('dist/lib/rawSchemaGenerator');
     export = tmp;
 }
 
-declare module "typescript-schema/dist/lib/schemaGenerator"{
-    import tmp = require('dist/lib/schemaGenerator');
+declare module "typescript-schema/dist/lib/rawSchemaToSchema"{
+    import tmp = require('dist/lib/rawSchemaToSchema');
+    export = tmp;
+}
+
+declare module "typescript-schema/dist/lib/schema"{
+    import tmp = require('dist/lib/schema');
     export = tmp;
 }
 

@@ -20,9 +20,11 @@
     "compileOnSave": true,
     "files": [
         "./lib/expressionToLiteral.ts",
+        "./lib/flattenSchema.ts",
         "./lib/index.ts",
+        "./lib/rawSchemaGenerator.ts",
+        "./lib/rawSchemaToSchema.ts",
         "./lib/schema.ts",
-        "./lib/schemaGenerator.ts",
         "./lib/schemaVisitor.ts",
         "./typings/es6/es6.d.ts",
         "./typings/node/node.d.ts",

@@ -1,34 +1,35 @@
 import * as s from './schema'
 
 export interface SchemaVisitor extends ModuleSchemaVisitor {
-  onModuleSchema?: (moduleSchema: s.ModuleSchema) => void
+  onModuleSchema?: (moduleSchema: s.Module) => void
 }
 
 export interface ModuleSchemaVisitor extends ClassSchemaVisitor, InterfaceSchemaVisitor {
-  onClass?: (classSchema: s.ClassSchema, moduleSchema?: s.ModuleSchema) => void
-  onInterface?: (interfaceSchema: s.InterfaceSchema, moduleSchema?: s.ModuleSchema) => void
+  onClass?: (classSchema: s.Class, moduleSchema?: s.Module) => void
+  onInterface?: (interfaceSchema: s.Interface, moduleSchema?: s.Module) => void
 }
 
 export interface ClassSchemaVisitor {
-  onClassDecorator?: (decoratorSchema: s.DecoratorSchema, classSchema?: s.ClassSchema, moduleSchema?: s.ModuleSchema) => void
-  onClassMember?: (memberSchema: s.MemberSchema, classSchema?: s.ClassSchema, moduleSchema?: s.ModuleSchema) => void
+  onClassDecorator?: (decoratorSchema: s.Decorator, classSchema?: s.Class, moduleSchema?: s.Module) => void
+  onClassMember?: (memberSchema: s.ClassMember, classSchema?: s.Class, moduleSchema?: s.Module) => void
+  onClassMemberDecorator?: (decoratorSchema: s.Decorator, memberSchema: s.ClassMember, classSchema?: s.Class, moduleSchema?: s.Module) => void
 }
 
 export interface InterfaceSchemaVisitor {
-  onInterfaceMember?: (memberSchema: s.MemberSchema, interfaceSchema?: s.InterfaceSchema, moduleSchema?: s.ModuleSchema) => void
+  onInterfaceMember?: (memberSchema: s.InterfaceMember, interfaceSchema?: s.Interface, moduleSchema?: s.Module) => void
 }
 
 export function schemaVisitor(schema: s.Schema, visitor: SchemaVisitor) {
   Object.keys(schema).forEach(function(name) {
     let subSchema = schema[name]
     if (visitor.onModuleSchema) {
-      visitor.onModuleSchema(<s.ModuleSchema>subSchema)
+      visitor.onModuleSchema(subSchema)
     }
-    moduleSchemaVisitor(<s.ModuleSchema>subSchema, visitor)
+    moduleSchemaVisitor(subSchema, visitor)
   })
 }
 
-export function moduleSchemaVisitor(moduleSchema: s.ModuleSchema, visitor: ModuleSchemaVisitor) {
+export function moduleSchemaVisitor(moduleSchema: s.Module, visitor: ModuleSchemaVisitor) {
   Object.keys(moduleSchema.classes).forEach(function(className: string) {
     let classSchema = moduleSchema.classes[className]
     if (visitor.onClass) {
@@ -45,20 +46,26 @@ export function moduleSchemaVisitor(moduleSchema: s.ModuleSchema, visitor: Modul
   })
 }
 
-export function classSchemaVisitor(classSchema: s.ClassSchema, visitor: ClassSchemaVisitor, moduleSchema?: s.ModuleSchema) {
-  if (visitor.onClassDecorator) {
+export function classSchemaVisitor(classSchema: s.Class, visitor: ClassSchemaVisitor, moduleSchema?: s.Module) {
+  if (visitor.onClassDecorator && classSchema.decorators) {
     classSchema.decorators.forEach(function(decoratorSchema) {
       visitor.onClassDecorator(decoratorSchema, classSchema, moduleSchema)
     })
   }
   if (visitor.onClassMember) {
     Object.keys(classSchema.members).forEach(function(memberName) {
-      visitor.onClassMember(classSchema.members[memberName], classSchema, moduleSchema)
+      let member = classSchema.members[memberName]
+      visitor.onClassMember(member, classSchema, moduleSchema)
+      if (visitor.onClassMemberDecorator && member.decorators) {
+        member.decorators.forEach(function(decoratorSchema) {
+          visitor.onClassMemberDecorator(decoratorSchema, member, classSchema, moduleSchema)
+        })
+      }
     })
   }
 }
 
-export function interfaceSchemaVisitor(interfaceSchema: s.InterfaceSchema, visitor: InterfaceSchemaVisitor, moduleSchema?: s.ModuleSchema) {
+export function interfaceSchemaVisitor(interfaceSchema: s.Interface, visitor: InterfaceSchemaVisitor, moduleSchema?: s.Module) {
   if (visitor.onInterfaceMember) {
     Object.keys(interfaceSchema.members).forEach(function(memberName) {
       visitor.onInterfaceMember(interfaceSchema.members[memberName], interfaceSchema, moduleSchema)
