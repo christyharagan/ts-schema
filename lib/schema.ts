@@ -14,6 +14,7 @@ export interface RawInterface extends ParameterisedType {
 
 export interface RawClass extends Decorated, ParameterisedType {
   name: string
+  constructorSchema?: FunctionType
   members: RawClassMembers
   extends?: RawReference|RefinedType<RawReference>
   implements?: (RawReference|RefinedType<RawReference>)[]
@@ -86,6 +87,7 @@ export interface Classes {
 
 export interface Class extends Decorated, ParameterisedType, NamedType {
   members: ClassMembers
+  constructorSchema?: FunctionType
   extends?: Class|RefinedType<Class>
   implements?: (Interface|RefinedType<Interface>)[]
 }

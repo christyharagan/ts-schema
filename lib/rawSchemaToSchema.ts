@@ -169,6 +169,9 @@ function convertRawClass(schema:s.Schema, rawClass:s.RawClass, cls:s.Class) {
   if (rawClass.decorators) {
     cls.decorators = convertRawDecorators(schema, rawClass.decorators)
   }
+  if (rawClass.constructorSchema) {
+    cls.constructorSchema = <s.FunctionType> convertRawType(schema, rawClass.constructorSchema)
+  }
   Object.keys(rawClass.members).forEach(function(name){
     let rawMember = rawClass.members[name]
     let member = cls.members[name]

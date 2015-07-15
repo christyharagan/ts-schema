@@ -158,6 +158,10 @@ function typeNodeToType(container:s.RawContainer, symbols: Symbols, typeNode: ts
         let type:s.Type
 
         switch (member.kind) {
+          case ts.SyntaxKind.Constructor:
+            let constructorDec = <ts.ConstructorDeclaration> member
+            clsSchema.constructorSchema = <s.FunctionType>typeNodeToType(container, symbols, constructorDec)
+            break
           case ts.SyntaxKind.MethodDeclaration:
             let methodDec = <ts.MethodDeclaration> member
             name = (<ts.Identifier>methodDec.name).text
@@ -166,7 +170,6 @@ function typeNodeToType(container:s.RawContainer, symbols: Symbols, typeNode: ts
           case ts.SyntaxKind.PropertyDeclaration:
             let propertyDec = <ts.PropertyDeclaration> member
             name = (<ts.Identifier>propertyDec.name).text
-            //let type:s.Type
             if (!propertyDec.type) {
               if (propertyDec.initializer) {
                 type = determineTypeFromExpression(propertyDec.initializer)
@@ -231,6 +234,7 @@ function typeNodeToType(container:s.RawContainer, symbols: Symbols, typeNode: ts
     case ts.SyntaxKind.FunctionType:
     case ts.SyntaxKind.MethodSignature:
     case ts.SyntaxKind.MethodDeclaration:
+    case ts.SyntaxKind.Constructor:
       let funcType = <ts.FunctionOrConstructorTypeNode> typeNode
 
       let params: Array<s.Parameter> = []
