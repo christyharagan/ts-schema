@@ -52,10 +52,12 @@ export function classSchemaVisitor(classSchema: s.Class, visitor: ClassSchemaVis
       visitor.onClassDecorator(decoratorSchema, classSchema, moduleSchema)
     })
   }
-  if (visitor.onClassMember) {
+  if (visitor.onClassMember || visitor.onClassMemberDecorator) {
     Object.keys(classSchema.members).forEach(function(memberName) {
       let member = classSchema.members[memberName]
-      visitor.onClassMember(member, classSchema, moduleSchema)
+      if (visitor.onClassMember) {
+        visitor.onClassMember(member, classSchema, moduleSchema)
+      }
       if (visitor.onClassMemberDecorator && member.decorators) {
         member.decorators.forEach(function(decoratorSchema) {
           visitor.onClassMemberDecorator(decoratorSchema, member, classSchema, moduleSchema)

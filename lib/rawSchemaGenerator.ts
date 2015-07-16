@@ -418,20 +418,23 @@ function processFile(moduleName: string, code: string): s.RawContainer {
   return moduleSchema
 }
 
-export function fileNameToModuleName(fileName: string): string {
+export function fileNameToModuleName(fileName: string, packageName?:string): string {
   fileName = fileName.replace(/\\/g, '/')
   if (fileName.indexOf('.ts') === fileName.length - 3 || fileName.indexOf('.js') === fileName.length - 3) {
     fileName = fileName.substring(0, fileName.length - 3)
   }
+  if (packageName) {
+    fileName = path.join(packageName, fileName)
+  }
   return fileName
 }
 
-export function generateRawSchema(files: Files): s.RawSchema {
+export function generateRawSchema(files: Files, packageName?:string): s.RawSchema {
   let schema: s.RawSchema = []
 
   Object.keys(files).forEach(function(fileName: string) {
     let file = files[fileName]
-    fileName = fileNameToModuleName(fileName)
+    fileName = fileNameToModuleName(fileName, packageName)
     schema.push(processFile(fileName, <string> file))
   })
 
