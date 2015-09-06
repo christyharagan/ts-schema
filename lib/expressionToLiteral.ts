@@ -1,37 +1,33 @@
-import * as s from './schema'
+import * as m from './model'
 
-export function literalExpressionToLiteral(literalExpresion:s.Literal<any>) {
-  return literalExpresion.value
-}
-
-export function arrayExpressionToLiteral(arrayExpression:s.ArrayExpression):Array<any> {
-  return arrayExpression.elements.map(function(expression){
+function arrayExpressionToLiteral(arrayExpression: m.ArrayExpression): Array<any> {
+  return arrayExpression.elements.map(function(expression) {
     return expressionToLiteral(expression)
   })
 }
 
-export function objectExpressionToLiteral(objectExpression:s.ObjectExpression):Object {
+function objectExpressionToLiteral(objectExpression: m.ObjectExpression): Object {
   let obj = {}
 
-  Object.keys(objectExpression.properties).forEach(function(property){
+  Object.keys(objectExpression.properties).forEach(function(property) {
     obj[property] = expressionToLiteral(objectExpression.properties[property])
   })
 
   return obj
 }
 
-export function expressionToLiteral(expression:s.Expression) {
-  switch(expression.expressionKind) {
-    case s.ExpressionKind.STRING:
-    case s.ExpressionKind.BOOLEAN:
-    case s.ExpressionKind.NUMBER:
-      return literalExpressionToLiteral(<s.Literal<any>> expression)
-    case s.ExpressionKind.CLASS:
-      let clsExpression = <s.ClassExpression> expression
+export function expressionToLiteral(expression: m.Expression) {
+  switch (expression.expressionKind) {
+    case m.ExpressionKind.STRING:
+    case m.ExpressionKind.BOOLEAN:
+    case m.ExpressionKind.NUMBER:
+      return (<m.LiteralExpression<any>> expression).value
+    case m.ExpressionKind.CLASS:
+      let clsExpression = <m.ClassExpression> expression
       return clsExpression.class
-    case s.ExpressionKind.ARRAY:
-      return arrayExpressionToLiteral(<s.ArrayExpression> expression)
-    case s.ExpressionKind.OBJECT:
-      return objectExpressionToLiteral(<s.ObjectExpression> expression)
+    case m.ExpressionKind.ARRAY:
+      return arrayExpressionToLiteral(<m.ArrayExpression> expression)
+    case m.ExpressionKind.OBJECT:
+      return objectExpressionToLiteral(<m.ObjectExpression> expression)
   }
 }

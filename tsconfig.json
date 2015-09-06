@@ -11,25 +11,33 @@
         "target": "es5",
         "outDir": "./dist"
     },
+    "formatCodeOptions": {
+        "indentSize": 2,
+        "tabSize": 2
+    },
     "filesGlob": [
         "./lib/**/*.ts",
         "./typings/**/*.d.ts",
-        "./node_modules/typescript/bin/typescript.d.ts",
-        "./typescript-schema.d.ts"
+        "./node_modules/*/*.d.ts",
+        "./node_modules/typescript/bin/typescript.d.ts"
     ],
     "compileOnSave": true,
     "files": [
+        "./lib/equals.ts",
         "./lib/expressionToLiteral.ts",
-        "./lib/flattenSchema.ts",
+        "./lib/factories.ts",
+        "./lib/filter.ts",
         "./lib/index.ts",
-        "./lib/rawSchemaGenerator.ts",
-        "./lib/rawSchemaToSchema.ts",
-        "./lib/schema.ts",
-        "./lib/schemaVisitor.ts",
+        "./lib/model.ts",
+        "./lib/rawConverter.ts",
+        "./lib/serialiserParser.ts",
+        "./lib/toString.ts",
+        "./lib/typeCloser.ts",
+        "./lib/typeUtils.ts",
+        "./lib/visitor.ts",
         "./typings/es6/es6.d.ts",
         "./typings/node/node.d.ts",
         "./typings/tsd.d.ts",
-        "./node_modules/typescript/bin/typescript.d.ts",
-        "./typescript-schema.d.ts"
+        "./node_modules/typescript/bin/typescript.d.ts"
     ]
 }
