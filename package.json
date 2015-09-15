@@ -1,17 +1,14 @@
 {
   "name": "typescript-schema",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A reflective type model for TypeScript applications",
-  "main": "./dist/lib/index.js",
-  "typings": "./typescript-schema.d.ts",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "repository": "christyharagan/ts-schema",
   "author": {
     "name": "Christy Haragan",
     "email": "christy.haragan.github@gmail.com",
     "url": "https://github.com/christyharagan"
-  },
-  "typescript": {
-    "definition": "typescript-schema.d.ts"
   },
   "keywords": [
     "typescript",

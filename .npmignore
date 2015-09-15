@@ -1,4 +1,4 @@
 node_modules
-module
 .tmp
-gulpfile.ts
+.DS_Store
+npm-debug.log
