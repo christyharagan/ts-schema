@@ -16,7 +16,6 @@
     "filesGlob": [
         "./src/**/*.ts",
         "./typings/**/*.d.ts",
-        "./lib/**/*.d.ts",
         "./node_modules/typescript/bin/typescript.d.ts"
     ],
     "compileOnSave": true,
@@ -24,18 +23,20 @@
         "./src/lib/equals.ts",
         "./src/lib/expressionToLiteral.ts",
         "./src/lib/factories.ts",
+        "./src/lib/factoryToReflective.ts",
+        "./src/lib/factoryToSerial.ts",
         "./src/lib/filter.ts",
         "./src/lib/index.ts",
         "./src/lib/model.ts",
-        "./src/lib/rawConverter.ts",
+        "./src/lib/serialToFactory.ts",
         "./src/lib/serialiserParser.ts",
         "./src/lib/toString.ts",
-        "./src/lib/typeCloser.ts",
+        "./src/lib/typeConstructor.ts",
         "./src/lib/typeUtils.ts",
+        "./src/lib/visitor-BAK.ts",
         "./src/lib/visitor.ts",
         "./typings/es6/es6.d.ts",
         "./typings/node/node.d.ts",
-        "./typings/tsd.d.ts",
-        "./node_modules/typescript/bin/typescript.d.ts"
+        "./typings/tsd.d.ts"
     ]
 }

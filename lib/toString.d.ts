@@ -1,0 +1,13 @@
+import { reflective as m } from './model';
+export declare function typeToString(type: m.Type): string;
+export declare function containerToString(container: m.Container): string;
+export declare function typeAliasConstructorToString(typeAliasConstructor: m.TypeAliasConstructor<any>): string;
+export declare function classConstructorToString(classConstructor: m.ClassConstructor): string;
+export declare function interfaceConstructorToString(interfaceConstructor: m.InterfaceConstructor): string;
+export declare function primitiveTypeToString(type: m.PrimitiveType): string;
+export declare function functionTypeToString(type: m.FunctionType): string;
+export declare function tupleTypeToString(type: m.TupleType): string;
+export declare function unionTypeToString(type: m.UnionOrIntersectionType): string;
+export declare function intersectionTypeToString(type: m.UnionOrIntersectionType): string;
+export declare function classToString(type: m.Class): string;
+export declare function interfaceToString(type: m.Interface): string;

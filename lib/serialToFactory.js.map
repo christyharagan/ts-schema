@@ -1,0 +1,1 @@
+{"version":3,"file":"serialToFactory.js","sourceRoot":"./","sources":["lib/serialToFactory.ts"],"names":["convertRawModules"],"mappings":"AAKA,2BAAkC,OAA8B;IAC9DA,IAAIA,eAAeA,GAA8BA,EAAEA,CAAAA;IAYnDA,MAAMA,CAACA,eAAeA,CAAAA;AACxBA,CAACA;AAde,yBAAiB,oBAchC,CAAA"}

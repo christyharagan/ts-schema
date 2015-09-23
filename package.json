@@ -1,6 +1,6 @@
 {
   "name": "typescript-schema",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A reflective type model for TypeScript applications",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -18,6 +18,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "typescript": "^1.5.3"
+    "typescript": "1.6.2"
   }
 }
