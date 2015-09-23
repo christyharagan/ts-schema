@@ -626,8 +626,6 @@ export abstract class AbstractContainerFactory extends AbstractFactory<m.Contain
   }
 
   addValue(name: string): ValueFactory<any> {
-
-//    if (!Object.prototype.hasOwnProperty(name)) {
       let s = this.values[name]
       if (s) {
         return s
@@ -636,9 +634,6 @@ export abstract class AbstractContainerFactory extends AbstractFactory<m.Contain
         this.values[name] = <any>sc
         return sc
       }
-//    } else {
-//      console.log(name)
-//    }
   }
 
   addNamespace(name: string): NamespaceFactory {

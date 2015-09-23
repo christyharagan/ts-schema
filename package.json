@@ -1,6 +1,6 @@
 {
   "name": "typescript-schema",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A reflective type model for TypeScript applications",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

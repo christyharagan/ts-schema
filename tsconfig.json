@@ -7,7 +7,8 @@
         "sourceMap": true,
         "sourceRoot": ".",
         "target": "es5",
-        "outDir": "."
+        "outDir": ".",
+        "moduleResolution": "node"
     },
     "formatCodeOptions": {
         "indentSize": 2,
@@ -15,8 +16,7 @@
     },
     "filesGlob": [
         "./src/**/*.ts",
-        "./typings/**/*.d.ts",
-        "./node_modules/typescript/bin/typescript.d.ts"
+        "./typings/**/*.d.ts"
     ],
     "compileOnSave": true,
     "files": [
