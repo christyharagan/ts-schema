@@ -336,6 +336,7 @@ export function factoryToSerializable(): <U extends ModelElementTemplate>(factor
     let parameter = <m.Parameter>{}
     parameter.name = factory.name
     parameter.optional = factory.optional
+    parameter.type = convertType(factory.type)
     if (factory.initializer) {
       parameter.initializer = convertExpression(factory.initializer)
     }
@@ -378,6 +379,7 @@ export function factoryToSerializable(): <U extends ModelElementTemplate>(factor
 
   function convertDecorator(factory: f.DecoratorFactory<any>) {
     let decorator = <m.Decorator>{}
+    decorator.decoratorType = getReference(factory.decoratorType)
     if (factory.parameters) {
       decorator.parameters = factory.parameters.map(convertExpression)
     }

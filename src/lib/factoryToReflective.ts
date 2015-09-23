@@ -570,6 +570,7 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     if (factory.decorators) {
       decorated.decorators = factory.decorators.map(function(decoratorFactory){
         let decorator = <m.Decorator<any>> createModelElement(ModelKind.DECORATOR, e.decoratorEquals)
+        decorator.decoratorType = <m.Value<any>>getReference(decoratorFactory.decoratorType)
         if (decoratorFactory.parameters) {
           decorator.parameters = decoratorFactory.parameters.map(convertExpression)
         }
