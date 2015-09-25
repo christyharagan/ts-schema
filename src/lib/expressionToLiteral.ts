@@ -28,7 +28,7 @@ export function expressionToLiteral(expression: m.Expression<any>) {
       return (<m.ValueExpression<any>>expression).value.initializer
     case ExpressionKind.ENUM:
       let enumExpression = <m.EnumExpression>expression
-      return enumExpression.enum.valueMap[enumExpression.value].initializer
+      return expressionToLiteral(enumExpression.enum.valueMap[enumExpression.value].initializer)
     case ExpressionKind.PROPERTY_ACCESS:
       let propertyAccessExpression = <m.PropertyAccessExpression<any>>expression
       let parent = expressionToLiteral(propertyAccessExpression.parent)
