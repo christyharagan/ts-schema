@@ -3,6 +3,7 @@ import {reflective as m, KeyValue, ModelKind, TypeKind, PrimitiveTypeKind, Expre
 import * as e from './equals'
 import * as f from './factories'
 import * as tc from './typeConstructor'
+import {expressionToLiteral} from './expressionToLiteral'
 
 export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.TypeParameter<any>>): <U extends ModelElementTemplate>(factory: f.Factory<U>) => (() => U) {
   pkg = pkg || {
@@ -645,18 +646,31 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
       parent.enums[factory.name] = en
       en.typeKind = TypeKind.ENUM
     }
+    en.valueMap = {}
+    let previousValue = -1
     en.members = factory.members.map(function(memberFactory){
-      return convertEnumMember(memberFactory, en)
+      let member = convertEnumMember(memberFactory, en, previousValue)
+      previousValue = expressionToLiteral(member.initializer)
+      en.valueMap[member.name] = member
+      return member
     })
     return en
   }
 
-  function convertEnumMember(factory:f.EnumMemberFactory, parent:m.Enum) {
+  function convertEnumMember(factory:f.EnumMemberFactory, parent:m.Enum, previousValue?:number) {
     let member = <m.EnumMember>createModelElement(ModelKind.ENUM_MEMBER, e.enumMemberEquals)
     member.parent = parent
     member.name = factory.name
     if (factory.initializer) {
       member.initializer = convertExpression(factory.initializer)
+    } else {
+      member.initializer = <m.PrimitiveExpression<number>>{
+        primitiveValue:PrimitiveTypeKind.NUMBER,
+        modelKind:ModelKind.EXPRESSION,
+        expressionKind:ExpressionKind.PRIMITIVE,
+        equals:e.primitiveExpressionEquals,
+        primitiveTypeKind:previousValue + 1
+      }
     }
     return member
   }
