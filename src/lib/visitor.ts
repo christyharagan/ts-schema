@@ -19,7 +19,7 @@ export interface ValueVisitor {
 
 export interface ClassConstructorVisitor {
   onExtend?: (extend: m.Class) => void|ClassVisitor
-  onImplement?: (extend: m.Interface) => void|InterfaceVisitor
+  onImplement?: (extend: m.Interface|m.Class) => void|InterfaceVisitor|ClassVisitor
   onInstanceType?: (instanceType: m.CompositeType) => void|CompositeTypeVisitor
   onStaticType?: (instanceType: m.CompositeType) => void|CompositeTypeVisitor
   onTypeParameter?: (typeParameter: m.TypeParameter<m.ClassConstructor>) => void
@@ -29,7 +29,7 @@ export interface ClassConstructorVisitor {
 export interface ClassVisitor {
   onClassConstructor?: (classConstructor: m.ClassConstructor) => void|ClassConstructorVisitor
   onExtend?: (extend: m.Class) => void|ClassVisitor
-  onImplement?: (extend: m.Interface) => void|InterfaceVisitor
+  onImplement?: (extend: m.Interface|m.Class) => void|InterfaceVisitor|ClassVisitor
   onInstanceType?: (instanceType: m.CompositeType) => void|CompositeTypeVisitor
   onStaticType?: (instanceType: m.CompositeType) => void|CompositeTypeVisitor
   onTypeArgument?: (typeArgument: m.Type, typeParameter: m.TypeParameter<m.ClassConstructor>) => void
@@ -37,14 +37,14 @@ export interface ClassVisitor {
 }
 
 export interface InterfaceConstructorVisitor {
-  onExtend?: (extend: m.Interface) => void|InterfaceVisitor
+  onExtend?: (extend: m.Interface|m.Class) => void|InterfaceVisitor|ClassVisitor
   onInstanceType?: (instanceType: m.CompositeType) => void|CompositeTypeVisitor
   onTypeParameter?: (typeParameter: m.TypeParameter<m.InterfaceConstructor>) => void
 }
 
 export interface InterfaceVisitor {
   onInterfaceConstructor?: (interfaceConstructor: m.InterfaceConstructor) => void|InterfaceConstructorVisitor
-  onExtend?: (extend: m.Interface) => void|InterfaceVisitor
+  onExtend?: (extend: m.Interface|m.Class) => void|InterfaceVisitor|ClassVisitor
   onTypeArgument?: (typeArgument: m.Type, typeParameter: m.TypeParameter<m.InterfaceConstructor>) => void
   onInstanceType?: (instanceType: m.CompositeType) => void|CompositeTypeVisitor
 }
@@ -219,7 +219,11 @@ export function visitClassConstructor(cls: m.ClassConstructor, visitor: ClassCon
     cls.implements.forEach(function(impl) {
       let iVisitor = visitor.onImplement(impl)
       if (iVisitor) {
-        visitInterface(impl, <InterfaceVisitor>iVisitor)
+        if (impl.typeKind === TypeKind.INTERFACE) {
+          visitInterface(<m.Interface>impl, <InterfaceVisitor>iVisitor)
+        } else {
+          visitClass(<m.Class>impl, <ClassVisitor>iVisitor)
+        }
       }
     })
   }
@@ -264,7 +268,11 @@ export function visitClass(cls: m.Class, visitor: ClassVisitor) {
     cls.implements.forEach(function(impl) {
       let iVisitor = visitor.onImplement(impl)
       if (iVisitor) {
-        visitInterface(impl, <InterfaceVisitor>iVisitor)
+        if (impl.typeKind === TypeKind.INTERFACE) {
+          visitInterface(<m.Interface>impl, <InterfaceVisitor>iVisitor)
+        } else {
+          visitClass(<m.Class>impl, <ClassVisitor>iVisitor)
+        }
       }
     })
   }
@@ -292,7 +300,11 @@ export function visitInterfaceConstructor(inter: m.InterfaceConstructor, visitor
     inter.extends.forEach(function(impl) {
       let iVisitor = visitor.onExtend(impl)
       if (iVisitor) {
-        visitInterface(impl, <InterfaceVisitor>iVisitor)
+        if (impl.typeKind === TypeKind.INTERFACE) {
+          visitInterface(<m.Interface>impl, <InterfaceVisitor>iVisitor)
+        } else {
+          visitClass(<m.Class>impl, <ClassVisitor>iVisitor)
+        }
       }
     })
   }
@@ -320,7 +332,11 @@ export function visitInterface(inter: m.Interface, visitor: InterfaceVisitor) {
     inter.extends.forEach(function(impl) {
       let iVisitor = visitor.onExtend(impl)
       if (iVisitor) {
-        visitInterface(impl, <InterfaceVisitor>iVisitor)
+        if (impl.typeKind === TypeKind.INTERFACE) {
+          visitInterface(<m.Interface>impl, <InterfaceVisitor>iVisitor)
+        } else {
+          visitClass(<m.Class>impl, <ClassVisitor>iVisitor)
+        }
       }
     })
   }
@@ -436,6 +452,7 @@ export function visitTypeQuery(typeQuery: m.TypeQuery, visitor: TypeQueryVisitor
           visitTypeContainer(<m.Container>typeQuery.type, <ContainerVisitor>v)
         }
       }
+      break
     case ModelKind.VALUE:
       if (visitor.onVariable) {
         let v = visitor.onVariable(<m.Value<any>>typeQuery.type)
@@ -443,8 +460,10 @@ export function visitTypeQuery(typeQuery: m.TypeQuery, visitor: TypeQueryVisitor
           visitValue(<m.Value<any>>typeQuery.type, <MemberVisitor>v)
         }
       }
+      break
     case ModelKind.TYPE:
       visitType(<m.Type>typeQuery.type, visitor)
+      break
   }
 }
 
@@ -457,6 +476,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitFunctionType(<m.FunctionType>type, <FunctionTypeVisitor>v)
         }
       }
+      break
     case TypeKind.COMPOSITE:
       if (visitor.onCompositeType) {
         let v = visitor.onCompositeType(<m.CompositeType>type)
@@ -464,6 +484,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitCompositeType(<m.CompositeType>type, <CompositeTypeVisitor>v)
         }
       }
+      break
     case TypeKind.INTERFACE:
       if (visitor.onInterface) {
         let v = visitor.onInterface(<m.Interface>type)
@@ -471,6 +492,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitInterface(<m.Interface>type, <InterfaceVisitor>v)
         }
       }
+      break
     case TypeKind.CLASS:
       let cls = <m.Class>type
       if (cls.name === 'Array' && cls.typeConstructor.parent.name === '' && visitor.onArrayType) {
@@ -484,10 +506,12 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitClass(cls, <ClassVisitor>v)
         }
       }
+      break
     case TypeKind.ENUM:
       if (visitor.onEnumType) {
         visitor.onEnumType(<m.Enum>type)
       }
+      break
     case TypeKind.TYPE_QUERY:
       if (visitor.onTypeQuery) {
         let v = visitor.onTypeQuery(<m.TypeQuery>type)
@@ -495,6 +519,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitTypeQuery(<m.TypeQuery>type, <TypeQueryVisitor>v)
         }
       }
+      break
     case TypeKind.UNION:
       if (visitor.onUnionType) {
         let v = visitor.onUnionType(<m.UnionOrIntersectionType>type)
@@ -502,6 +527,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitUnionOrIntersectionType(<m.UnionOrIntersectionType>type, <UnionOrIntersectionTypeVisitor>v)
         }
       }
+      break
     case TypeKind.INTERSECTION:
       if (visitor.onUnionType) {
         let v = visitor.onIntersectionType(<m.UnionOrIntersectionType>type)
@@ -509,6 +535,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitUnionOrIntersectionType(<m.UnionOrIntersectionType>type, <UnionOrIntersectionTypeVisitor>v)
         }
       }
+      break
     case TypeKind.TUPLE:
       if (visitor.onTupleType) {
         let v = visitor.onTupleType(<m.TupleType>type)
@@ -516,6 +543,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitTupleType(<m.TupleType>type, <TupleTypeVisitor>v)
         }
       }
+      break
     case TypeKind.COMPOSITE:
       if (visitor.onCompositeType) {
         let v = visitor.onCompositeType(<m.CompositeType>type)
@@ -523,6 +551,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitCompositeType(<m.CompositeType>type, <CompositeTypeVisitor>v)
         }
       }
+      break
     case TypeKind.TYPE_ALIAS:
       if (visitor.onTypeAlias) {
         let v = visitor.onTypeAlias(<m.TypeAlias<any>>type)
@@ -530,6 +559,7 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           visitType((<m.TypeAlias<any>>type).type, <TypeVisitor>v)
         }
       }
+      break
     case TypeKind.PRIMITIVE:
       let p = <m.PrimitiveType>type
       switch (p.primitiveTypeKind) {
@@ -537,26 +567,33 @@ export function visitType(type: m.Type, visitor: TypeVisitor) {
           if (visitor.onString) {
             visitor.onString()
           }
+          break
         case PrimitiveTypeKind.BOOLEAN:
           if (visitor.onBoolean) {
             visitor.onBoolean()
           }
+          break
         case PrimitiveTypeKind.NUMBER:
           if (visitor.onNumber) {
             visitor.onNumber()
           }
+          break
         case PrimitiveTypeKind.VOID:
           if (visitor.onVoid) {
             visitor.onVoid()
           }
+          break
         case PrimitiveTypeKind.ANY:
           if (visitor.onAny) {
             visitor.onAny()
           }
+          break
         case PrimitiveTypeKind.SYMBOL:
           if (visitor.onSymbol) {
             visitor.onSymbol()
           }
+          break
       }
+      break
   }
 }

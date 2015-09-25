@@ -46,20 +46,10 @@ export const containerEquals = createEquals(function(tc: m.Container) {
   }
 })
 
-export const containedEquals = createEquals(function(cc: m.Contained) {
-  let classConstuctor: m.ClassConstructor = this
-  return classConstuctor.name === cc.name && classConstuctor.parent.equals(cc.parent)
+export const containedEquals = createEquals(function(c: m.Contained) {
+  let contained: m.Contained = this
+  return contained.name === c.name && contained.parent.equals(c.parent)
 })
-
-// export const interfaceConstructorEquals = createEquals(function(ic: m.InterfaceConstructor) {
-//   let interfaceConstructor: m.InterfaceConstructor = this
-//   return interfaceConstructor.name === ic.name && interfaceConstructor.parent.equals(ic.parent)
-// })
-//
-// export const interfaceConstructorEquals = createEquals(function(ic: m.InterfaceConstructor) {
-//   let interfaceConstructor: m.InterfaceConstructor = this
-//   return interfaceConstructor.name === ic.name && interfaceConstructor.parent.equals(ic.parent)
-// })
 
 export const protoClassEquals = createTypeEquals(function(pc: m.ProtoClass) {
   let protoClass: m.ProtoClass = this
@@ -74,35 +64,18 @@ export const constructableTypeEquals = createTypeEquals(function(c: m.Constructa
   if ((cls.typeArguments && !c.typeArguments) || (!cls.typeArguments && c.typeArguments)) {
     return false
   }
-  if (cls.typeArguments.length !== c.typeArguments.length) {
-    return false
-  }
-  for (let j = 0; j < cls.typeArguments.length; j++) {
-    if (!cls.typeArguments[j].equals(c.typeArguments[j])) {
+  if (cls.typeArguments) {
+    if (cls.typeArguments.length !== c.typeArguments.length) {
       return false
+    }
+    for (let j = 0; j < cls.typeArguments.length; j++) {
+      if (!cls.typeArguments[j].equals(c.typeArguments[j])) {
+        return false
+      }
     }
   }
   return true
 })
-
-// export const interfaceEquals = createTypeEquals(function(i: m.Interface) {
-//   let int: m.Interface = this
-//   if (!int.typeConstructor.equals(i.typeConstructor)) {
-//     return false
-//   }
-//   if ((int.typeArguments && !i.typeArguments) || (!int.typeArguments && i.typeArguments)) {
-//     return false
-//   }
-//   if (int.typeArguments.length !== i.typeArguments.length) {
-//     return false
-//   }
-//   for (let j = 0; j < int.typeArguments.length; j++) {
-//     if (!int.typeArguments[j].equals(i.typeArguments[j])) {
-//       return false
-//     }
-//   }
-//   return true
-// })
 
 export const typeParameterEquals = createEquals(function(tp: m.TypeParameter<m.ModelElement>) {
   let typeParameter: m.TypeParameter<m.ModelElement> = this
@@ -146,25 +119,10 @@ export const memberEquals = createEquals(function <P extends m.CompositeType>(m:
   return member.parent.equals(m.parent)
 })
 
-// export const valueEquals = createEquals(function(v: m.Value<any>) {
-//   let value: m.Value<any> = this
-//   return value.name === v.name && value.parent.equals(v.parent)
-// })
-
 export const enumMemberEquals = createEquals(function(em: m.EnumMember) {
   let enumMember: m.EnumMember = this
   return enumMember.name === em.name && enumMember.parent.equals(em.parent)
 })
-
-// export const enumEquals = createTypeEquals(function(e: m.Enum) {
-//   let enumType: m.Enum = this
-//   return enumType.name === e.name && enumType.parent.equals(e.parent)
-// })
-
-// export const typeAliasEquals = createTypeEquals(function(a: m.TypeAlias<any>) {
-//   let typeAlias: m.TypeAlias<any> = this
-//   return typeAlias.name === a.name && typeAlias.parent.equals(a.parent)
-// })
 
 export const primitiveTypeEquals = createTypeEquals(function(p: m.PrimitiveType) {
   let primitiveType: m.PrimitiveType = this
@@ -314,11 +272,44 @@ export const functionExpressionEquals = createExpressionEquals(function(cE: m.Fu
 })
 
 export const functionCallExpressionEquals = createExpressionEquals(function(cE: m.FunctionCallExpression<any>) {
-  // We cannot determine equality, so return an undefined answer
-  return undefined
+  let callExpression: m.FunctionCallExpression<any> = this
+  let eq = callExpression.function.equals(cE.function)
+  if (!eq) {
+    return eq
+  } else {
+    if (callExpression.arguments.length !== cE.arguments.length) {
+      return false
+    }
+    for (let i = 0; i < callExpression.arguments.length; i++) {
+      let eq = callExpression.arguments[i].equals(cE.arguments[i])
+      if (!eq) {
+        return eq
+      }
+    }
+    return true
+  }
 })
 
-export const PropertyAccessExpressionEquals = createExpressionEquals(function <T extends m.Type>(paE: m.PropertyAccessExpression<T>) {
+export const newExpressionEquals = createExpressionEquals(function(nE: m.NewExpression<any>){
+  let newExpression: m.NewExpression<any> = this
+  let eq = newExpression.classReference.equals(nE.classReference)
+  if (!eq) {
+    return eq
+  } else {
+    if (newExpression.arguments.length !== nE.arguments.length) {
+      return false
+    }
+    for (let i = 0; i < newExpression.arguments.length; i++) {
+      let eq = newExpression.arguments[i].equals(nE.arguments[i])
+      if (!eq) {
+        return eq
+      }
+    }
+    return true
+  }
+})
+
+export const propertyAccessExpressionEquals = createExpressionEquals(function <T extends m.Type>(paE: m.PropertyAccessExpression<T>) {
   let propertyAccessExpression: m.PropertyAccessExpression<T> = this
   let eq = propertyAccessExpression.parent.equals(paE.parent)
   if (eq === undefined) {

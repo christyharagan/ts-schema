@@ -154,6 +154,15 @@ export class ClassReferenceExpressionFactory extends AbstractExpressionFactory<m
   }
 }
 
+export class NewExpressionFactory extends AbstractExpressionFactory<m.NewExpressionTemplate<any>> implements m.NewExpressionTemplate<ExpressionFactory<any>> {
+  classReference: ExpressionFactory<any>
+  arguments: ExpressionFactory<any>[]
+
+  constructor() {
+    super(m.ExpressionKind.NEW)
+  }
+}
+
 export class ObjectExpressionFactory extends AbstractExpressionFactory<m.ObjectExpressionTemplate<any>> implements m.ObjectExpressionTemplate<ExpressionFactory<any>> {
   properties: m.KeyValue<ExpressionFactory<any>> = {}
 
@@ -432,10 +441,10 @@ export abstract class AbstractConstructableTypeFactory<T extends m.Constructable
   typeArguments: TypeFactory<any>[] = []
 }
 
-export class ClassFactory extends AbstractConstructableTypeFactory<m.ClassTemplate<any, any, any, any, any, any>, ClassConstructorFactory> implements m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory, ClassConstructorFactory, TypeFactory<any>>, DecoratedFactory<m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory, ClassConstructorFactory, TypeFactory<any>>, ClassFactory> {
+export class ClassFactory extends AbstractConstructableTypeFactory<m.ClassTemplate<any, any, any, any, any, any>, ClassConstructorFactory> implements m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory|ClassFactory, ClassConstructorFactory, TypeFactory<any>>, DecoratedFactory<m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory, ClassConstructorFactory, TypeFactory<any>>, ClassFactory> {
   instanceType: DecoratedCompositeTypeFactory<ClassFactory>
   staticType: DecoratedCompositeTypeFactory<ClassFactory>
-  implements: InterfaceFactory[] = []
+  implements: (InterfaceFactory|ClassFactory)[] = []
   extends: ClassFactory
   decorators: DecoratorFactory<ClassFactory>[] = []
   isAbstract: boolean
@@ -448,9 +457,9 @@ export class ClassFactory extends AbstractConstructableTypeFactory<m.ClassTempla
   }
 }
 
-export class InterfaceFactory extends AbstractConstructableTypeFactory<m.InterfaceTemplate<any, any, any, any>, InterfaceConstructorFactory> implements m.InterfaceTemplate<CompositeTypeFactory<InterfaceFactory>, InterfaceFactory, InterfaceConstructorFactory, TypeFactory<any>> {
+export class InterfaceFactory extends AbstractConstructableTypeFactory<m.InterfaceTemplate<any, any, any, any>, InterfaceConstructorFactory> implements m.InterfaceTemplate<CompositeTypeFactory<InterfaceFactory>, InterfaceFactory|ClassFactory, InterfaceConstructorFactory, TypeFactory<any>> {
   instanceType: CompositeTypeFactory<InterfaceFactory>
-  extends: InterfaceFactory[] = []
+  extends: (InterfaceFactory|ClassFactory)[] = []
 
   constructor() {
     super(m.TypeKind.INTERFACE)
@@ -506,9 +515,9 @@ export abstract class AbstractTypeConstructorFactory<T extends m.TypeConstructor
   }
 }
 
-export class InterfaceConstructorFactory extends AbstractTypeConstructorFactory<m.InterfaceConstructorTemplate<any, any, any>, InterfaceConstructorFactory> implements m.InterfaceConstructorTemplate<CompositeTypeFactory<InterfaceConstructorFactory>, InterfaceFactory, TypeParameterFactory<InterfaceConstructorFactory>>, ContainedFactory<m.InterfaceConstructorTemplate<any, any, any>> {
+export class InterfaceConstructorFactory extends AbstractTypeConstructorFactory<m.InterfaceConstructorTemplate<any, any, any>, InterfaceConstructorFactory> implements m.InterfaceConstructorTemplate<CompositeTypeFactory<InterfaceConstructorFactory>, InterfaceFactory|ClassFactory, TypeParameterFactory<InterfaceConstructorFactory>>, ContainedFactory<m.InterfaceConstructorTemplate<any, any, any>> {
   instanceType: CompositeTypeFactory<InterfaceConstructorFactory>
-  extends: InterfaceFactory[] = []
+  extends: (InterfaceFactory|ClassFactory)[] = []
   typeParameters: TypeParameterFactory<InterfaceConstructorFactory>[] = []
 
   constructor(parent: ContainerFactory, name: string) {
@@ -532,10 +541,10 @@ export class TypeAliasConstructorFactory<T extends m.TypeTemplate> extends Abstr
   }
 }
 
-export class ClassConstructorFactory extends AbstractTypeConstructorFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory> implements m.ClassConstructorTemplate<DecoratedCompositeTypeFactory<ClassConstructorFactory>, DecoratorFactory<ClassConstructorFactory>, ClassFactory, InterfaceFactory, TypeParameterFactory<ClassConstructorFactory>>, DecoratedFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory>, ContainedFactory<m.ClassConstructorTemplate<any, any, any, any, any>> {
+export class ClassConstructorFactory extends AbstractTypeConstructorFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory> implements m.ClassConstructorTemplate<DecoratedCompositeTypeFactory<ClassConstructorFactory>, DecoratorFactory<ClassConstructorFactory>, ClassFactory, InterfaceFactory|ClassFactory, TypeParameterFactory<ClassConstructorFactory>>, DecoratedFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory>, ContainedFactory<m.ClassConstructorTemplate<any, any, any, any, any>> {
   instanceType: DecoratedCompositeTypeFactory<ClassConstructorFactory>
   staticType: DecoratedCompositeTypeFactory<ClassConstructorFactory>
-  implements: InterfaceFactory[] = []
+  implements: (InterfaceFactory|ClassFactory)[] = []
   extends: ClassFactory
   decorators: DecoratorFactory<ClassConstructorFactory>[] = []
   isAbstract: boolean
@@ -695,6 +704,8 @@ export function expressionFactory(kindOrExpression: m.ExpressionKind|ExpressionF
         return new FunctionCallExpressionFactory()
       case m.ExpressionKind.PROPERTY_ACCESS:
         return new PropertyAccessExpressionFactory()
+      case m.ExpressionKind.NEW:
+        return new NewExpressionFactory()
     }
   }
 }

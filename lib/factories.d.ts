@@ -76,6 +76,11 @@ export declare class ClassReferenceExpressionFactory extends AbstractExpressionF
     classReference: ClassConstructorFactory;
     constructor();
 }
+export declare class NewExpressionFactory extends AbstractExpressionFactory<m.NewExpressionTemplate<any>> implements m.NewExpressionTemplate<ExpressionFactory<any>> {
+    classReference: ExpressionFactory<any>;
+    arguments: ExpressionFactory<any>[];
+    constructor();
+}
 export declare class ObjectExpressionFactory extends AbstractExpressionFactory<m.ObjectExpressionTemplate<any>> implements m.ObjectExpressionTemplate<ExpressionFactory<any>> {
     properties: m.KeyValue<ExpressionFactory<any>>;
     constructor();
@@ -211,19 +216,19 @@ export declare abstract class AbstractConstructableTypeFactory<T extends m.Const
     typeConstructor: TC;
     typeArguments: TypeFactory<any>[];
 }
-export declare class ClassFactory extends AbstractConstructableTypeFactory<m.ClassTemplate<any, any, any, any, any, any>, ClassConstructorFactory> implements m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory, ClassConstructorFactory, TypeFactory<any>>, DecoratedFactory<m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory, ClassConstructorFactory, TypeFactory<any>>, ClassFactory> {
+export declare class ClassFactory extends AbstractConstructableTypeFactory<m.ClassTemplate<any, any, any, any, any, any>, ClassConstructorFactory> implements m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory | ClassFactory, ClassConstructorFactory, TypeFactory<any>>, DecoratedFactory<m.ClassTemplate<DecoratedCompositeTypeFactory<ClassFactory>, DecoratorFactory<ClassFactory>, ClassFactory, InterfaceFactory, ClassConstructorFactory, TypeFactory<any>>, ClassFactory> {
     instanceType: DecoratedCompositeTypeFactory<ClassFactory>;
     staticType: DecoratedCompositeTypeFactory<ClassFactory>;
-    implements: InterfaceFactory[];
+    implements: (InterfaceFactory | ClassFactory)[];
     extends: ClassFactory;
     decorators: DecoratorFactory<ClassFactory>[];
     isAbstract: boolean;
     constructor();
     addDecorator(): any;
 }
-export declare class InterfaceFactory extends AbstractConstructableTypeFactory<m.InterfaceTemplate<any, any, any, any>, InterfaceConstructorFactory> implements m.InterfaceTemplate<CompositeTypeFactory<InterfaceFactory>, InterfaceFactory, InterfaceConstructorFactory, TypeFactory<any>> {
+export declare class InterfaceFactory extends AbstractConstructableTypeFactory<m.InterfaceTemplate<any, any, any, any>, InterfaceConstructorFactory> implements m.InterfaceTemplate<CompositeTypeFactory<InterfaceFactory>, InterfaceFactory | ClassFactory, InterfaceConstructorFactory, TypeFactory<any>> {
     instanceType: CompositeTypeFactory<InterfaceFactory>;
-    extends: InterfaceFactory[];
+    extends: (InterfaceFactory | ClassFactory)[];
     constructor();
 }
 export declare class TypeAliasFactory<T extends m.TypeTemplate> extends AbstractConstructableTypeFactory<m.TypeAliasTemplate<any, any, any>, TypeAliasConstructorFactory<T>> implements m.TypeAliasTemplate<T, TypeAliasConstructorFactory<T>, TypeFactory<any>> {
@@ -244,9 +249,9 @@ export declare abstract class AbstractTypeConstructorFactory<T extends m.TypeCon
     constructor(modelKind: m.ModelKind, parent: ContainerFactory, name: string);
     addTypeParameter(name: string): any;
 }
-export declare class InterfaceConstructorFactory extends AbstractTypeConstructorFactory<m.InterfaceConstructorTemplate<any, any, any>, InterfaceConstructorFactory> implements m.InterfaceConstructorTemplate<CompositeTypeFactory<InterfaceConstructorFactory>, InterfaceFactory, TypeParameterFactory<InterfaceConstructorFactory>>, ContainedFactory<m.InterfaceConstructorTemplate<any, any, any>> {
+export declare class InterfaceConstructorFactory extends AbstractTypeConstructorFactory<m.InterfaceConstructorTemplate<any, any, any>, InterfaceConstructorFactory> implements m.InterfaceConstructorTemplate<CompositeTypeFactory<InterfaceConstructorFactory>, InterfaceFactory | ClassFactory, TypeParameterFactory<InterfaceConstructorFactory>>, ContainedFactory<m.InterfaceConstructorTemplate<any, any, any>> {
     instanceType: CompositeTypeFactory<InterfaceConstructorFactory>;
-    extends: InterfaceFactory[];
+    extends: (InterfaceFactory | ClassFactory)[];
     typeParameters: TypeParameterFactory<InterfaceConstructorFactory>[];
     constructor(parent: ContainerFactory, name: string);
     createInstanceType(): CompositeTypeFactory<InterfaceConstructorFactory>;
@@ -255,10 +260,10 @@ export declare class TypeAliasConstructorFactory<T extends m.TypeTemplate> exten
     type: TypeFactory<T>;
     constructor(parent: ContainerFactory, name: string);
 }
-export declare class ClassConstructorFactory extends AbstractTypeConstructorFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory> implements m.ClassConstructorTemplate<DecoratedCompositeTypeFactory<ClassConstructorFactory>, DecoratorFactory<ClassConstructorFactory>, ClassFactory, InterfaceFactory, TypeParameterFactory<ClassConstructorFactory>>, DecoratedFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory>, ContainedFactory<m.ClassConstructorTemplate<any, any, any, any, any>> {
+export declare class ClassConstructorFactory extends AbstractTypeConstructorFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory> implements m.ClassConstructorTemplate<DecoratedCompositeTypeFactory<ClassConstructorFactory>, DecoratorFactory<ClassConstructorFactory>, ClassFactory, InterfaceFactory | ClassFactory, TypeParameterFactory<ClassConstructorFactory>>, DecoratedFactory<m.ClassConstructorTemplate<any, any, any, any, any>, ClassConstructorFactory>, ContainedFactory<m.ClassConstructorTemplate<any, any, any, any, any>> {
     instanceType: DecoratedCompositeTypeFactory<ClassConstructorFactory>;
     staticType: DecoratedCompositeTypeFactory<ClassConstructorFactory>;
-    implements: InterfaceFactory[];
+    implements: (InterfaceFactory | ClassFactory)[];
     extends: ClassFactory;
     decorators: DecoratorFactory<ClassConstructorFactory>[];
     isAbstract: boolean;

@@ -14,7 +14,6 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     typeArgs: <KeyValue<m.Type>>{},
     closedTypes: <tc.ClosedTypes>{},
     closedTypeCallbacks: <(() => void)[]>[]
-//    isStarted: false
   }
 
   function createModelElement<U extends m.ModelElement>(modelKind:ModelKind, equals:(e: m.ModelElement) => boolean) {
@@ -52,6 +51,7 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     let contained = <m.Contained>createModelElement(modelKind, e.containedEquals)
     contained.name = name
     contained.parent = parent
+    contained.equals = e.containedEquals
     switch (modelKind) {
       case ModelKind.CLASS_CONSTRUCTOR:
         parent.classConstructors[name] = <m.ClassConstructor>contained
@@ -146,35 +146,87 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
         functionExpression.functionType = <m.FunctionType>convertType(functionFactory.functionType, {})
         return functionExpression
       case ExpressionKind.CLASS:
+        let classFactory = <f.ClassExpressionFactory>factory
+        let classExpression = <m.ClassExpression>createExpression(factory.expressionKind, e.classExpressionEquals)
+        classExpression.class = <m.ProtoClass>convertType(classFactory.class, {})
+        return classExpression
       case ExpressionKind.OBJECT:
+        let objectFactory = <f.ObjectExpressionFactory>factory
+        let objectExpression = <m.ObjectExpression>createExpression(factory.expressionKind, e.objectExpressionEquals)
+        objectExpression.properties = {}
+        Object.keys(objectFactory.properties).forEach(function(name) {
+          objectExpression.properties[name] = convertExpression(objectFactory.properties[name])
+        })
+        return objectExpression
       case ExpressionKind.ARRAY:
+        let arrayFactory = <f.ArrayExpressionFactory>factory
+        let arrayExpression = <m.ArrayExpression>createExpression(factory.expressionKind, e.arrayExpressionEquals)
+        arrayExpression.elements = arrayFactory.elements.map(convertExpression)
+        return arrayExpression
       case ExpressionKind.CLASS_REFERENCE:
+        let classRefExpression = <m.ClassReferenceExpression>createExpression(factory.expressionKind, e.classReferenceExpressionEquals)
+        classRefExpression.classReference = <m.ClassConstructor>getReference((<f.ClassReferenceExpressionFactory>factory).classReference)
+        return classRefExpression
       case ExpressionKind.VALUE:
+        let valueFactory = <f.ValueExpressionFactory<any>>factory
+        let valueExpression = <m.ValueExpression<any>>createExpression(factory.expressionKind, e.valueExpressionEquals)
+        valueExpression.value = <m.Value<any>>getReference(valueFactory.value)
+        return valueExpression
       case ExpressionKind.FUNCTION_CALL:
+        let functionCallFactory = <f.FunctionCallExpressionFactory>factory
+        let functionCallExpression = <m.FunctionCallExpression<any>>createExpression(factory.expressionKind, e.functionCallExpressionEquals)
+        functionCallExpression.function = convertExpression(functionCallFactory.function)
+        functionCallExpression.arguments = functionCallFactory.arguments.map(convertExpression)
+        return functionCallExpression
       case ExpressionKind.PROPERTY_ACCESS:
+        let propAccessFactory = <f.PropertyAccessExpressionFactory>factory
+        let propAccessExpression = <m.PropertyAccessExpression<any>>createExpression(factory.expressionKind, e.propertyAccessExpressionEquals)
+        propAccessExpression.parent = convertExpression(propAccessFactory.parent)
+        propAccessFactory.property = propAccessFactory.property
+        return propAccessExpression
+      case ExpressionKind.NEW:
+        let newFactory = <f.NewExpressionFactory>factory
+        let newExpression = <m.NewExpression<any>>createExpression(factory.expressionKind, e.newExpressionEquals)
+        newExpression.classReference = convertExpression(newFactory.classReference)
+        newExpression.arguments = newFactory.arguments.map(convertExpression)
+        return newExpression
     }
   }
 
   function convertClass(factory:f.ClassFactory, typeParameters:KeyValue<m.TypeParameter<any>>) {
     let cc = <m.ClassConstructor>getReference(factory.typeConstructor)
-    if (cc.modelKind === ModelKind.INTERFACE_CONSTRUCTOR) {
-      console.log(factory)
-    }
-    let typeArgs = factory.typeArguments.map(function(arg){
-      return convertType(arg, typeParameters)
-    })
+    let typeArgs = getTypeArgs(factory, typeParameters)
 
     let cls:m.Class
-    let _construct = function(_typeArgs?:KeyValue<m.Type>){
+    let _construct = function(parentTypeArgs?:KeyValue<m.Type>){
       if (cls['_construct']) {
-        // TODO: Temporary to get over the line for a demo
-        //tc.constructClass(cc, typeArgs, _typeArgs || context.typeArgs, context.closedTypes, cls)
+        let c = tc.constructClass(cc, typeArgs, parentTypeArgs || context.typeArgs, context.closedTypes)
+        function populate() {
+          cls.instanceType = <m.DecoratedCompositeType<any>>copyCompositeType(c.instanceType, cls)
+          cls.staticType = <m.DecoratedCompositeType<any>>copyCompositeType(c.staticType, cls)
+          cls.extends = c.extends
+          cls.implements = c.implements
+          cls.typeArguments = c.typeArguments
+          copyDecorators(c.decorators, cls)
+        }
+        if (c['_onFinished']) {
+          c['_onFinished'](populate)
+        } else {
+          populate()
+        }
         delete cls['_construct']
       }
+      return cls
     }
 
     cls = <any>{
-      _construct: _construct
+      _construct: _construct,
+      modelKind: ModelKind.TYPE,
+      name: cc.name,
+      typeKind: TypeKind.CLASS,
+      typeConstructor: cc,
+      constructorParent: cc.parent,
+      equals: e.constructableTypeEquals
     }
     context.closedTypeCallbacks.push(_construct)
     return cls
@@ -252,23 +304,94 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     return contained
   }
 
+  function copyElement(oldElement:m.ModelElement): m.ModelElement {
+    return {
+      modelKind:oldElement.modelKind,
+      equals:oldElement.equals
+    }
+  }
+
+  function copyDecorators(oldDecorators:m.Decorator<any>[], decorated:m.Decorated) {
+    if (oldDecorators) {
+      decorated.decorators = oldDecorators.map(function(oldDecorator){
+        let newDecorator = <m.Decorator<any>>copyElement(oldDecorator)
+        newDecorator.parent = decorated
+        newDecorator.parameters = oldDecorator.parameters
+        return newDecorator
+      })
+    }
+  }
+
+  function copyCompositeType(ct: m.CompositeType, parent: any): m.CompositeType {
+    let copy = <m.CompositeType>{
+      members: {},
+      modelKind: ModelKind.TYPE,
+      typeKind: TypeKind.COMPOSITE,
+      equals: e.compositeTypeEquals
+    }
+    Object.keys(ct.members).forEach(function(name) {
+      let member = ct.members[name]
+      copy.members[name] = {
+        parent: copy,
+        name: name,
+        type: member.type,
+        optional: member.optional,
+        initializer: member.initializer,
+        modelKind: member.modelKind,
+        equals: e.memberEquals
+      }
+      copyDecorators((<m.DecoratedMember<any>>member).decorators, <m.DecoratedMember<any>>copy.members[name])
+    })
+    if (ct.index) {
+      copy.index = {
+        parent: copy,
+        keyType: ct.index.keyType,
+        valueType: ct.index.valueType,
+        modelKind: ModelKind.INDEX,
+        equals: e.indexEquals
+      }
+    }
+    if (ct.calls) {
+      copy.calls = ct.calls.map(function(call) {
+        return call
+      })
+    }
+    (<m.ContainedCompositeType<any>>copy).parent = parent
+
+    return copy
+  }
+
   function convertInterface(factory:f.InterfaceFactory, typeParameters:KeyValue<m.TypeParameter<any>>) {
     let ic = <m.InterfaceConstructor>getReference(factory.typeConstructor)
-    let typeArgs = factory.typeArguments.map(function(arg){
-      return convertType(arg, typeParameters)
-    })
+    let typeArgs = getTypeArgs(factory, typeParameters)
 
     let int:m.Interface
-    let _construct = function(_typeArgs?:KeyValue<m.Type>){
+    let _construct = function(parentTypeArgs?:KeyValue<m.Type>){
       if (int['_construct']) {
-        // TODO: Temporary to get over the line for a demo
-        //tc.constructInterface(ic, typeArgs, _typeArgs || context.typeArgs, context.closedTypes, int)
+        let i = tc.constructInterface(ic, typeArgs, parentTypeArgs || context.typeArgs, context.closedTypes)
+        function populate() {
+          int.typeArguments = i.typeArguments
+          int.extends = i.extends
+          int.instanceType = <m.ContainedCompositeType<m.Interface>>copyCompositeType(i.instanceType, int)
+        }
+        if (i['_onFinished']) {
+          i['_onFinished'](populate)
+        } else {
+          populate()
+        }
         delete int['_construct']
       }
+      return int
     }
 
     int = <any>{
-      _construct: _construct
+      _construct: _construct,
+      modelKind: ModelKind.TYPE,
+      name: ic.name,
+      typeKind: TypeKind.INTERFACE,
+      typeConstructor: ic,
+      constructorParent: ic.parent,
+      equals: e.constructableTypeEquals
     }
     context.closedTypeCallbacks.push(_construct)
 
@@ -298,7 +421,11 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     }
     if (factory.implements) {
       cc.implements = factory.implements.map(function(impl){
-        return convertInterface(impl, typeParameters)
+        if (impl.typeKind === TypeKind.INTERFACE) {
+          return convertInterface(<f.InterfaceFactory>impl, typeParameters)
+        } else {
+          return convertClass(<f.ClassFactory>impl, typeParameters)
+        }
       })
     }
     return cc
@@ -321,7 +448,11 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     ic.instanceType = <m.ContainedCompositeType<m.InterfaceConstructor>>convertCompositeType(factory.instanceType, typeParameters, ic)
     if (factory.extends) {
       ic.extends = factory.extends.map(function(ext){
-        return convertInterface(ext, typeParameters)
+        if (ext.typeKind === TypeKind.INTERFACE) {
+          return convertInterface(<f.InterfaceFactory>ext, typeParameters)
+        } else {
+          return convertClass(<f.ClassFactory>ext, typeParameters)
+        }
       })
     }
     return ic
@@ -345,23 +476,49 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     return tac
   }
 
-  function convertTypeAlias(factory:f.TypeAliasFactory<any>, typeParameters:KeyValue<m.TypeParameter<any>>) {
-    let tac = <m.TypeAliasConstructor<any>>getReference(factory.typeConstructor)
-    let typeArgs = factory.typeArguments.map(function(arg){
+  function getTypeArgs(factory:f.AbstractConstructableTypeFactory<any, any>, typeParameters:KeyValue<m.TypeParameter<any>>) {
+    let factoryTypeArguments = factory.typeArguments
+    if (factoryTypeArguments.length === 0 && factory.typeConstructor.typeParameters.length > 0) {
+      factoryTypeArguments = factory.typeConstructor.typeParameters.map(function(){
+        return new f.PrimitiveTypeFactory(PrimitiveTypeKind.ANY)
+      })
+    }
+
+    return factoryTypeArguments.map(function(arg){
       return convertType(arg, typeParameters)
     })
+  }
+
+  function convertTypeAlias(factory:f.TypeAliasFactory<any>, typeParameters:KeyValue<m.TypeParameter<any>>) {
+    let tac = <m.TypeAliasConstructor<any>>getReference(factory.typeConstructor)
+    let typeArgs = getTypeArgs(factory, typeParameters)
 
     let ta = <m.TypeAlias<any>>{}
-    let _construct = function(_typeArgs?:KeyValue<m.Type>){
+    let _construct = function(parentTypeArgs?:KeyValue<m.Type>){
       if (ta['_construct']) {
-        // TODO: Temporary to get over the line for a demo
-        //tc.constructTypeAlias(tac, typeArgs, _typeArgs || context.typeArgs, context.closedTypes, ta)
+        let t = tc.constructTypeAlias(tac, typeArgs, parentTypeArgs || context.typeArgs, context.closedTypes)
+        function populate() {
+          ta.type = t.type
+        }
+        if (ta['_onFinished']) {
+          ta['_onFinished'](populate)
+        } else {
+          populate()
+        }
         delete ta['_construct']
       }
+      return ta
     }
 
     ta = <any>{
-      _construct: _construct
+      _construct: _construct,
+      modelKind: ModelKind.TYPE,
+      name: tac.name,
+      typeKind: TypeKind.TYPE_ALIAS,
+      typeConstructor: tac,
+      constructorParent: tac.parent,
+      typeArguments: typeArgs,
+      equals: e.constructableTypeEquals
     }
     context.closedTypeCallbacks.push(_construct)
     return ta
@@ -415,6 +572,7 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
       container = pkg.modules[factory.name]
       if (!container) {
         container = createContainer(factory.containerKind)
+        container.name = factory.name
         pkg.modules[factory.name] = container
       }
     }
@@ -470,6 +628,7 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
   function convertMember(factory:f.AbstractMemberFactory<any, any, any>, typeParameters:KeyValue<m.TypeParameter<any>>, parent:m.CompositeType) {
     let member = <m.Member<any>> createModelElement(ModelKind.MEMBER, e.memberEquals)
     member.parent = parent
+    member.name = factory.name
     member.type = convertType(factory.type, typeParameters)
     member.optional = factory.optional
     if (factory.initializer) {
@@ -549,16 +708,20 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     return u
   }
 
+  function convertTypeParameter(factory:f.TypeParameterFactory<any>, typeConstructor: m.TypeConstructor, typeParameters:KeyValue<m.TypeParameter<any>>) {
+    let tp = <m.TypeParameter<any>> createType(TypeKind.TYPE_PARAMETER, e.typeParameterEquals)
+    tp.parent = typeConstructor
+    tp.name = factory.name
+    if (factory.extends) {
+      tp.extends = convertType(factory.extends, typeParameters)
+    }
+    return tp
+  }
+
   function convertTypeParameters(factory: f.TypeConstructorFactory<any>, typeConstructor: m.TypeConstructor, typeParameters:KeyValue<m.TypeParameter<any>>) {
     if (factory.typeParameters && factory.typeParameters.length > 0) {
       typeConstructor.typeParameters = factory.typeParameters.map(function(tpFactory){
-        let tp = <m.TypeParameter<any>> createType(TypeKind.TYPE_PARAMETER, e.typeParameterEquals)
-        tp.parent = typeConstructor
-        tp.name = tpFactory.name
-        if (tpFactory.extends) {
-          tp.extends = convertType(tpFactory.extends, typeParameters)
-        }
-        return tp
+        return convertTypeParameter(tpFactory, typeConstructor, typeParameters)
       })
       typeConstructor.typeParameters.forEach(function(typeParameter){
         typeParameters[typeParameter.name] = typeParameter
@@ -566,22 +729,25 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
     }
   }
 
+  function convertDecorator(factory: f.DecoratorFactory<any>, decorated:m.Decorated) {
+    let decorator = <m.Decorator<any>> createModelElement(ModelKind.DECORATOR, e.decoratorEquals)
+    decorator.parent = decorated
+    decorator.decoratorType = <m.Value<any>>getReference(factory.decoratorType)
+    if (factory.parameters) {
+      decorator.parameters = factory.parameters.map(convertExpression)
+    }
+    return decorator
+  }
+
   function convertDecorators(factory: f.DecoratedFactory<any, any>, decorated:m.Decorated) {
     if (factory.decorators) {
       decorated.decorators = factory.decorators.map(function(decoratorFactory){
-        let decorator = <m.Decorator<any>> createModelElement(ModelKind.DECORATOR, e.decoratorEquals)
-        decorator.decoratorType = <m.Value<any>>getReference(decoratorFactory.decoratorType)
-        if (decoratorFactory.parameters) {
-          decorator.parameters = decoratorFactory.parameters.map(convertExpression)
-        }
-        return decorator
+        return convertDecorator(decoratorFactory, decorated)
       })
     }
   }
 
   return function <U extends m.ModelElement>(factory: f.Factory<any>, parent?: m.ModelElement) {
-//    let wasStarted = context.isStarted
-//    context.isStarted = true
     return function():any {
       let u: U
       switch (factory.modelKind) {
@@ -607,22 +773,32 @@ export function factoryToReflective(pkg?:m.Package, _typeParameters?:KeyValue<m.
           u = <any>convertClassConstructor(<f.ClassConstructorFactory>factory, _typeParameters, <m.Container>parent)
           break
         case ModelKind.INDEX:
+          u = <any>convertIndex(<f.IndexFactory>factory, _typeParameters, <m.CompositeType>parent)
+          break
         case ModelKind.PARAMETER:
         case ModelKind.DECORATED_PARAMETER:
+          u = <any>convertParameter(<f.ParameterFactory<any>>factory, _typeParameters, <m.FunctionType>parent)
+          break
         case ModelKind.MEMBER:
-        case ModelKind.SYMBOL:
-        case ModelKind.ENUM_MEMBER:
-        case ModelKind.VALUE:
-        case ModelKind.EXPRESSION:
-        case ModelKind.DECORATOR:
         case ModelKind.DECORATED_MEMBER:
-          let decoratedMemberFactory = <f.DecoratedMemberFactory<any, any>>factory
+          u = <any>convertMember(<f.MemberFactory<any, any>>factory, _typeParameters, <m.CompositeType>parent)
+          break
+        case ModelKind.ENUM_MEMBER:
+          u = <any>convertEnumMember(<f.EnumMemberFactory>factory, <m.Enum>parent)
+          break
+        case ModelKind.VALUE:
+          u = <any>convertValue(<f.ValueFactory<any>>factory, _typeParameters, <m.Container>parent)
+          break
+        case ModelKind.EXPRESSION:
+          u = <any>convertExpression(<f.ExpressionFactory<any>>factory)
+          break
+        case ModelKind.DECORATOR:
+          u = <any>convertDecorator(<f.DecoratorFactory<any>>factory, <m.Decorated>parent)
+          break
       }
-//      if (!wasStarted) {
       context.closedTypeCallbacks.forEach(function(cb) {
         cb()
       })
-//      }
       return u
     }
   }

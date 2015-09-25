@@ -166,7 +166,7 @@ export function factoryToSerializable(): <U extends ModelElementTemplate>(factor
       case ExpressionKind.VALUE:
         let valueFactory = <f.ValueExpressionFactory<any>>factory
         let valueExpression = <m.ValueExpression>createExpression(factory.expressionKind)
-        valueExpression.value = convertValue(valueFactory.value)
+        valueExpression.value = getReference(valueFactory.value)
         return valueExpression
       case ExpressionKind.FUNCTION_CALL:
         let functionCallFactory = <f.FunctionCallExpressionFactory>factory
@@ -180,6 +180,12 @@ export function factoryToSerializable(): <U extends ModelElementTemplate>(factor
         propAccessExpression.parent = convertExpression(propAccessFactory.parent)
         propAccessFactory.property = propAccessFactory.property
         return propAccessExpression
+      case ExpressionKind.NEW:
+        let newFactory = <f.NewExpressionFactory>factory
+        let newExpression = <m.NewExpression>createExpression(factory.expressionKind)
+        newExpression.classReference = convertExpression(newFactory.classReference)
+        newExpression.arguments = newFactory.arguments.map(convertExpression)
+        return newExpression
     }
   }
 

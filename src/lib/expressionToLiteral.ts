@@ -22,6 +22,7 @@ export function expressionToLiteral(expression: m.Expression<any>) {
       return (<m.PrimitiveExpression<any>>expression).primitiveValue
     case ExpressionKind.FUNCTION:
     case ExpressionKind.FUNCTION_CALL:
+    case ExpressionKind.NEW:
       return undefined
     case ExpressionKind.VALUE:
       return (<m.ValueExpression<any>>expression).value.initializer

@@ -26,6 +26,7 @@ export declare const classExpressionEquals: any;
 export declare const classReferenceExpressionEquals: any;
 export declare const functionExpressionEquals: any;
 export declare const functionCallExpressionEquals: any;
-export declare const PropertyAccessExpressionEquals: any;
+export declare const newExpressionEquals: any;
+export declare const propertyAccessExpressionEquals: any;
 export declare const enumExpressionEquals: any;
 export declare const decoratorEquals: (m: m.ModelElement) => any;

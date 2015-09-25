@@ -158,12 +158,17 @@ export declare enum ExpressionKind {
     VALUE = 8,
     FUNCTION_CALL = 9,
     PROPERTY_ACCESS = 10,
+    NEW = 11,
 }
 export interface ExpressionTemplate {
     expressionKind: ExpressionKind;
 }
 export interface ClassReferenceExpressionTemplate<C> extends ExpressionTemplate {
     classReference: C;
+}
+export interface NewExpressionTemplate<E extends ExpressionTemplate> extends ExpressionTemplate {
+    classReference: E;
+    arguments: E[];
 }
 export interface ClassExpressionTemplate<C extends ProtoClassTemplate<any>> extends ExpressionTemplate {
     class: C;
@@ -295,12 +300,14 @@ export declare namespace serializable {
     }
     interface Decorator extends DecoratorTemplate<Reference, Expression> {
     }
-    type Expression = ClassExpression | ClassReferenceExpression | ValueExpression | PrimitiveExpression<any> | ArrayExpression | ObjectExpression | EnumExpression | FunctionExpression | FunctionCallExpression | PropertyAccessExpression | EnumExpression;
+    type Expression = ClassExpression | ClassReferenceExpression | ValueExpression | PrimitiveExpression<any> | ArrayExpression | ObjectExpression | EnumExpression | FunctionExpression | FunctionCallExpression | PropertyAccessExpression | EnumExpression | NewExpression;
     interface ClassReferenceExpression extends ClassReferenceExpressionTemplate<Reference> {
+    }
+    interface NewExpression extends NewExpressionTemplate<Expression> {
     }
     interface ClassExpression extends ClassExpressionTemplate<ProtoClass> {
     }
-    interface ValueExpression extends ValueExpressionTemplate<Value> {
+    interface ValueExpression extends ValueExpressionTemplate<Reference> {
     }
     interface EnumExpression extends EnumExpressionTemplate<Reference> {
     }
@@ -346,9 +353,9 @@ export declare namespace reflective {
     }
     interface Value<T extends Type> extends ValueTemplate<T, Expression<T>>, Contained {
     }
-    interface ClassConstructor extends ClassConstructorTemplate<DecoratedCompositeType<ClassConstructor>, Decorator<ClassConstructor>, Class, Interface, TypeParameter<ClassConstructor>>, Contained {
+    interface ClassConstructor extends ClassConstructorTemplate<DecoratedCompositeType<ClassConstructor>, Decorator<ClassConstructor>, Class, Interface | Class, TypeParameter<ClassConstructor>>, Contained {
     }
-    interface InterfaceConstructor extends InterfaceConstructorTemplate<ContainedCompositeType<InterfaceConstructor>, Interface, TypeParameter<InterfaceConstructor>>, Contained {
+    interface InterfaceConstructor extends InterfaceConstructorTemplate<ContainedCompositeType<InterfaceConstructor>, Interface | Class, TypeParameter<InterfaceConstructor>>, Contained {
     }
     interface TypeAliasConstructor<T extends Type> extends TypeAliasConstructorTemplate<T, TypeParameter<TypeAliasConstructor<T>>>, Contained {
     }
@@ -360,9 +367,9 @@ export declare namespace reflective {
         name: string;
         constructorParent: Container;
     }
-    interface Class extends ClassTemplate<DecoratedCompositeType<Class>, Decorator<Class>, Class, Interface, ClassConstructor, Type>, ConstructableType<ClassConstructor> {
+    interface Class extends ClassTemplate<DecoratedCompositeType<Class>, Decorator<Class>, Class, Interface | Class, ClassConstructor, Type>, ConstructableType<ClassConstructor> {
     }
-    interface Interface extends InterfaceTemplate<ContainedCompositeType<Interface>, Interface, InterfaceConstructor, Type>, ConstructableType<InterfaceConstructor> {
+    interface Interface extends InterfaceTemplate<ContainedCompositeType<Interface>, Interface | Class, InterfaceConstructor, Type>, ConstructableType<InterfaceConstructor> {
     }
     interface CompositeType extends CompositeTypeTemplate<Member<CompositeType>, Index, FunctionType>, ModelElement {
     }
@@ -424,6 +431,8 @@ export declare namespace reflective {
     interface Expression<TT extends Type> extends ExpressionTemplate, ModelElement {
     }
     interface ClassReferenceExpression extends ClassReferenceExpressionTemplate<ClassConstructor>, Expression<TypeQuery> {
+    }
+    interface NewExpression<T extends Type> extends NewExpressionTemplate<Expression<any>>, Expression<T> {
     }
     interface ClassExpression extends ClassExpressionTemplate<ProtoClass>, Expression<ProtoClass> {
     }

@@ -15,7 +15,7 @@ export interface ValueVisitor {
 }
 export interface ClassConstructorVisitor {
     onExtend?: (extend: m.Class) => void | ClassVisitor;
-    onImplement?: (extend: m.Interface) => void | InterfaceVisitor;
+    onImplement?: (extend: m.Interface | m.Class) => void | InterfaceVisitor | ClassVisitor;
     onInstanceType?: (instanceType: m.CompositeType) => void | CompositeTypeVisitor;
     onStaticType?: (instanceType: m.CompositeType) => void | CompositeTypeVisitor;
     onTypeParameter?: (typeParameter: m.TypeParameter<m.ClassConstructor>) => void;
@@ -24,20 +24,20 @@ export interface ClassConstructorVisitor {
 export interface ClassVisitor {
     onClassConstructor?: (classConstructor: m.ClassConstructor) => void | ClassConstructorVisitor;
     onExtend?: (extend: m.Class) => void | ClassVisitor;
-    onImplement?: (extend: m.Interface) => void | InterfaceVisitor;
+    onImplement?: (extend: m.Interface | m.Class) => void | InterfaceVisitor | ClassVisitor;
     onInstanceType?: (instanceType: m.CompositeType) => void | CompositeTypeVisitor;
     onStaticType?: (instanceType: m.CompositeType) => void | CompositeTypeVisitor;
     onTypeArgument?: (typeArgument: m.Type, typeParameter: m.TypeParameter<m.ClassConstructor>) => void;
     onClassDecorator?: (classDecorator: m.Decorator<m.Class>) => void;
 }
 export interface InterfaceConstructorVisitor {
-    onExtend?: (extend: m.Interface) => void | InterfaceVisitor;
+    onExtend?: (extend: m.Interface | m.Class) => void | InterfaceVisitor | ClassVisitor;
     onInstanceType?: (instanceType: m.CompositeType) => void | CompositeTypeVisitor;
     onTypeParameter?: (typeParameter: m.TypeParameter<m.InterfaceConstructor>) => void;
 }
 export interface InterfaceVisitor {
     onInterfaceConstructor?: (interfaceConstructor: m.InterfaceConstructor) => void | InterfaceConstructorVisitor;
-    onExtend?: (extend: m.Interface) => void | InterfaceVisitor;
+    onExtend?: (extend: m.Interface | m.Class) => void | InterfaceVisitor | ClassVisitor;
     onTypeArgument?: (typeArgument: m.Type, typeParameter: m.TypeParameter<m.InterfaceConstructor>) => void;
     onInstanceType?: (instanceType: m.CompositeType) => void | CompositeTypeVisitor;
 }
