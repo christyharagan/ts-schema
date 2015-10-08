@@ -1,5 +1,4 @@
 import {reflective as m, TypeKind, PrimitiveTypeKind, ContainerKind} from './model'
-import {posix as path} from 'path'
 
 export function typeToString(type: m.Type): string {
     switch ((<m.Type>type).typeKind) {

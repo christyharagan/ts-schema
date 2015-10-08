@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "emitDecoratorMetadata": true,
         "declaration": true,
         "module": "commonjs",
         "rootDir": "./src",
@@ -15,8 +14,7 @@
         "tabSize": 2
     },
     "filesGlob": [
-        "./src/**/*.ts",
-        "./typings/**/*.d.ts"
+        "./src/**/*.ts"
     ],
     "compileOnSave": true,
     "files": [
@@ -28,14 +26,11 @@
         "./src/lib/filter.ts",
         "./src/lib/index.ts",
         "./src/lib/model.ts",
-        "./src/lib/serialToFactory.ts",
         "./src/lib/serialiserParser.ts",
+        "./src/lib/serialToFactory.ts",
         "./src/lib/toString.ts",
         "./src/lib/typeConstructor.ts",
         "./src/lib/typeUtils.ts",
-        "./src/lib/visitor.ts",
-        "./typings/es6/es6.d.ts",
-        "./typings/node/node.d.ts",
-        "./typings/tsd.d.ts"
+        "./src/lib/visitor.ts"
     ]
 }
