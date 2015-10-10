@@ -13,24 +13,8 @@
         "indentSize": 2,
         "tabSize": 2
     },
-    "filesGlob": [
-        "./src/**/*.ts"
-    ],
     "compileOnSave": true,
-    "files": [
-        "./src/lib/equals.ts",
-        "./src/lib/expressionToLiteral.ts",
-        "./src/lib/factories.ts",
-        "./src/lib/factoryToReflective.ts",
-        "./src/lib/factoryToSerial.ts",
-        "./src/lib/filter.ts",
-        "./src/lib/index.ts",
-        "./src/lib/model.ts",
-        "./src/lib/serialiserParser.ts",
-        "./src/lib/serialToFactory.ts",
-        "./src/lib/toString.ts",
-        "./src/lib/typeConstructor.ts",
-        "./src/lib/typeUtils.ts",
-        "./src/lib/visitor.ts"
+    "exclude": [
+        "node_modules"
     ]
 }
