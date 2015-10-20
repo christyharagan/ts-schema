@@ -2,7 +2,7 @@ export interface KeyValue<T> {
     [name: string]: T;
 }
 export declare type Primitive = symbol | number | boolean | string;
-export declare enum ModelKind {
+export declare const enum ModelKind {
     PACKAGE = 1,
     CONTAINER = 2,
     CLASS_CONSTRUCTOR = 3,
@@ -20,14 +20,14 @@ export declare enum ModelKind {
     ENUM_MEMBER = 15,
     SYMBOL = 16,
 }
-export declare enum ContainerKind {
+export declare const enum ContainerKind {
     MODULE = 1,
     NAMESPACE = 2,
 }
 export interface ModelElementTemplate {
     modelKind: ModelKind;
 }
-export declare enum TypeKind {
+export declare const enum TypeKind {
     PRIMITIVE = 1,
     ENUM = 2,
     FUNCTION = 3,
@@ -55,7 +55,7 @@ export interface ContainerTemplate<C extends ClassConstructorTemplate<any, any, 
     values: KeyValue<S>;
     namespaces: KeyValue<N>;
 }
-export declare enum ValueKind {
+export declare const enum ValueKind {
     VAR = 1,
     LET = 2,
     CONST = 3,
@@ -147,7 +147,7 @@ export interface DecoratorTemplate<T, E extends ExpressionTemplate> {
     decoratorType: T;
     parameters?: E[];
 }
-export declare enum ExpressionKind {
+export declare const enum ExpressionKind {
     PRIMITIVE = 1,
     ENUM = 2,
     FUNCTION = 3,
@@ -222,7 +222,7 @@ export interface SymbolTemplate {
     isGlobal?: boolean;
     description?: string;
 }
-export declare enum PrimitiveTypeKind {
+export declare const enum PrimitiveTypeKind {
     STRING = 1,
     BOOLEAN = 2,
     NUMBER = 3,
@@ -455,7 +455,7 @@ export declare namespace reflective {
     interface DecoratorType extends FunctionType, ModelElement {
         decoratorTypeKind: DecoratorTypeKind;
     }
-    enum DecoratorTypeKind {
+    const enum DecoratorTypeKind {
         CLASS = 1,
         PROPERTY = 2,
         METHOD = 3,

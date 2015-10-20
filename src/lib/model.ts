@@ -4,7 +4,7 @@ export interface KeyValue<T> {
 
 export type Primitive = symbol | number | boolean | string
 
-export enum ModelKind {
+export const enum ModelKind {
   PACKAGE = 1,
   CONTAINER,
   CLASS_CONSTRUCTOR,
@@ -23,7 +23,7 @@ export enum ModelKind {
   SYMBOL
 }
 
-export enum ContainerKind {
+export const enum ContainerKind {
   MODULE = 1,
   NAMESPACE
 }
@@ -32,7 +32,7 @@ export interface ModelElementTemplate {
   modelKind: ModelKind
 }
 
-export enum TypeKind {
+export const enum TypeKind {
   PRIMITIVE = 1,
   ENUM,
   FUNCTION,
@@ -64,7 +64,7 @@ export interface ContainerTemplate<C extends ClassConstructorTemplate<any, any, 
   namespaces: KeyValue<N>
 }
 
-export enum ValueKind {
+export const enum ValueKind {
   VAR = 1,
   LET,
   CONST,
@@ -179,7 +179,7 @@ export interface DecoratorTemplate<T, E extends ExpressionTemplate> {
   parameters?: E[]
 }
 
-export enum ExpressionKind {
+export const enum ExpressionKind {
   PRIMITIVE = 1,
   ENUM,
   FUNCTION,
@@ -273,7 +273,7 @@ export interface SymbolTemplate {
   description?: string
 }
 
-export enum PrimitiveTypeKind {
+export const enum PrimitiveTypeKind {
   STRING = 1,
   BOOLEAN,
   NUMBER,
@@ -626,7 +626,7 @@ export namespace reflective {
     decoratorTypeKind: DecoratorTypeKind
   }
 
-  export enum DecoratorTypeKind {
+  export const enum DecoratorTypeKind {
     CLASS = 1,
     PROPERTY,
     METHOD,
